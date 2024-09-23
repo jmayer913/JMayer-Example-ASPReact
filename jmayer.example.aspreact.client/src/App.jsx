@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+//import { useEffect, useState } from 'react';
+import { Button } from 'primereact/button';
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primeflex/primeflex.css';
 import './App.css';
 
 function App() {
@@ -37,6 +40,15 @@ function App() {
         <div>
             <h1 id="tableLabel">Example Project</h1>
             {contents}
+            <div className="card flex flex-wrap justify-content-center gap-3">
+                <Button label="Primary" />
+                <Button label="Secondary" severity="secondary" />
+                <Button label="Success" severity="success" />
+                <Button label="Info" severity="info" />
+                <Button label="Warning" severity="warning" />
+                <Button label="Help" severity="help" />
+                <Button label="Danger" severity="danger" />
+            </div>
         </div>
     );
     

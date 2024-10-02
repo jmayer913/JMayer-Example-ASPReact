@@ -1,5 +1,7 @@
 import { Button } from 'primereact/button';
 
+//The top header of the website.
+//@param {function} props.setSideBarVisible Used by the component to show the sidebar menu.
 export default function Header({setSideBarVisible}) {
     return (
         <div className="flex flex-row align-items-center">

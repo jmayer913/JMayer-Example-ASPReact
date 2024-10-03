@@ -1,24 +1,30 @@
 import { useState } from 'react';
-import FlightSchedule from './components/flightSchedule/FlightSchedule.jsx';
-import Home from './components/home/Home.jsx';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import FlightSchedulePage from './components/flightSchedule/FlightSchedulePage.jsx';
+import HomePage from './components/home/HomePage.jsx';
 import Header from './components/layout/Header.jsx';
 import Menu from './components/layout/Menu.jsx';
+import NotFoundPage from './components/NotFound/NotFoundPage.jsx';
 import 'primereact/resources/themes/lara-dark-indigo/theme.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import './App.css';
 
-//The main layout of the website & the currently selected screen.
+//The main layout of the website & the current page.
 function App() {
     const [sideBarVisible, setSideBarVisible] = useState(false);
-    const [selectedScreen, setSelectedScreen] = useState('home');
 
     return (
         <>
             <Header setSideBarVisible={setSideBarVisible} />
-            <Menu sideBarVisible={sideBarVisible} setSideBarVisible={setSideBarVisible} setSelectedScreen={setSelectedScreen} />
-            {selectedScreen === 'home' && <Home />}
-            {selectedScreen === 'flight schedule' && <FlightSchedule /> }
+            <Menu sideBarVisible={sideBarVisible} setSideBarVisible={setSideBarVisible} />
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/FlightSchedule" element={<FlightSchedulePage />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+            </BrowserRouter>
         </>
     );
 }

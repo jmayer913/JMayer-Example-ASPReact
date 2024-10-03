@@ -3,8 +3,8 @@ import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 
-//The flight schedule screen. Users can manage active flights.
-export default function FlightSchedule() {
+//The flight schedule page. Users can manage active flights.
+export default function FlightSchedulePage() {
     const [flights, setFlights] = useState([]);
 
     useEffect(() => {

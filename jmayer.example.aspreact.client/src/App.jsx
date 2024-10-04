@@ -9,6 +9,7 @@ import 'primereact/resources/themes/lara-dark-indigo/theme.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import './App.css';
+import AirlinePage from './components/airline/AirlinePage.jsx';
 
 //The main layout of the website & the current page.
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/Airline" element={<AirlinePage /> } />
                     <Route path="/FlightSchedule" element={<FlightSchedulePage />} />
                     <Route path="*" element={<NotFoundPage />} />
                 </Routes>

@@ -13,6 +13,10 @@ export default function Menu({ sideBarVisible, setSideBarVisible }) {
             url: '/',
         },
         {
+            label: 'Airlines',
+            url: '/Airline',
+        },
+        {
             label: 'Flight Schedule',
             url: '/FlightSchedule',
         }

@@ -14,7 +14,7 @@ export default function FlightSchedulePage() {
     return (
         <Card title="Flight Schedule">
             <DataTable value={flights} tableStyle={{minWidth: '50rem'}}>
-                <Column field="code" header="Name" />
+                <Column field="name" header="Name" />
                 <Column field="destination" header="Destination" />
                 <Column field="departTime" header="Depart Time" />
                 <Column field="primarySort" header="Primary Sort" />

@@ -14,8 +14,8 @@ FlightScheduleExampleBuilder flightScheduleExampleBuilder = new();
 flightScheduleExampleBuilder.Build();
 
 //Add the data layers. Because the example data needs to be built before registration and the data
-//layers are memory based, dependency injection is not being used which is awkward but on a normal website,
-//the middleware would handle the dependency injection.
+//layers are memory based, the middleware is not creating the data layers which is awkard but on a
+//normal website, the middleware would handle this.
 builder.Services.AddSingleton<IAirlineDataLayer, AirlineDataLayer>(factory => (AirlineDataLayer)flightScheduleExampleBuilder.AirlineDataLayer);
 
 #endregion

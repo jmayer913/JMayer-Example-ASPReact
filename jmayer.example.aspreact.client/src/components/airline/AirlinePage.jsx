@@ -10,14 +10,15 @@ export default function AirlinePage() {
     useEffect(() => {
         let ignore = false;
 
-        //Need to add error handling.
-        //Need to figure out how to not hardcode the base address.
-        fetch("https://localhost:7020/api/Airline/All")
+        fetch("/api/Airline/All")
             .then(response => response.json())
             .then(json => {
                 if (!ignore) {
                     setAirlines(json)
                 }
+            })
+            .catch(error => {
+                //TO DO: Add error handling.
             });
 
         return () => {

@@ -28,11 +28,13 @@ export default function AirlinePage() {
 
     return (
         <Card title="Airlines">
-            <DataTable value={airlines} tableStyle={{ minWidth: '50rem' }}>
-                <Column field="name" header="Name" />
-                <Column field="iata" header="IATA" />
-                <Column field="icao" header="ICAO" />
-                <Column field="numberCode" header="Number Code" />
+            <DataTable value={airlines} filterDisplay="row" reorderableColumns stripedRows tableStyle={{ minWidth: '50rem' }}
+                    paginator rows={10} rowsPerPageOptions={[10, 25, 50]}
+                    removableSort sortField="name" sortOrder={1}>
+                <Column field="name" header="Name" filter sortable />
+                <Column field="iata" header="IATA" filter sortable />
+                <Column field="icao" header="ICAO" filter sortable />
+                <Column field="numberCode" header="Number Code" filter sortable />
             </DataTable>
         </Card>
     );

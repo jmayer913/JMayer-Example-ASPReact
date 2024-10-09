@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AirlinePage from './components/airline/AirlinePage.jsx';
 import FlightSchedulePage from './components/flightSchedule/FlightSchedulePage.jsx';
 import HomePage from './components/home/HomePage.jsx';
 import Header from './components/layout/Header.jsx';
@@ -9,7 +10,6 @@ import 'primereact/resources/themes/lara-dark-indigo/theme.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import './App.css';
-import AirlinePage from './components/airline/AirlinePage.jsx';
 
 //The main layout of the website & the current page.
 function App() {

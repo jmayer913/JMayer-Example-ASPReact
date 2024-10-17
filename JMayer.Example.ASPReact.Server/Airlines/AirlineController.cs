@@ -1,5 +1,4 @@
-﻿using JMayer.Data.Database.DataLayer;
-using JMayer.Web.Mvc.Controller;
+﻿using JMayer.Web.Mvc.Controller;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JMayer.Example.ASPReact.Server.Airlines;

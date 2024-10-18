@@ -63,20 +63,40 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
 
     //Processes the server side validation result and sets any validation errors.
     const processServerSideValidationResult = (serverSideValidationResult) => {
-        if (serverSideValidationResult.errors['Name'] !== undefined) {
-            setNameValidationError(serverSideValidationResult.errors['Name'][0]);
+        if (Array.isArray(serverSideValidationResult.errors)) {
+            for (const error of serverSideValidationResult.errors) {
+                switch (error.propertyName) {
+                    case 'Name':
+                        setNameValidationError(error.errorMessage);
+                        break;
+                    case 'IATA':
+                        setIataValidationError(error.errorMessage);
+                        break;
+                    case 'ICAO':
+                        setIcaoValidationError(error.errorMessage);
+                        break;
+                    case 'NumberCode':
+                        setNumberCodeValidationError(error.errorMessage);
+                        break;
+                }
+            }
         }
+        else {
+            if (serverSideValidationResult.errors['Name'] !== undefined) {
+                setNameValidationError(serverSideValidationResult.errors['Name'][0]);
+            }
 
-        if (serverSideValidationResult.errors['IATA'] !== undefined) {
-            setIataValidationError(serverSideValidationResult.errors['IATA'][0]);
-        }
+            if (serverSideValidationResult.errors['IATA'] !== undefined) {
+                setIataValidationError(serverSideValidationResult.errors['IATA'][0]);
+            }
 
-        if (serverSideValidationResult.errors['ICAO'] !== undefined) {
-            setIcaoValidationError(serverSideValidationResult.errors['ICAO'][0]);
-        }
+            if (serverSideValidationResult.errors['ICAO'] !== undefined) {
+                setIcaoValidationError(serverSideValidationResult.errors['ICAO'][0]);
+            }
 
-        if (serverSideValidationResult.errors['NumberCode'] !== undefined) {
-            setNumberCodeValidationError(serverSideValidationResult.errors['NumberCode'][0]);
+            if (serverSideValidationResult.errors['NumberCode'] !== undefined) {
+                setNumberCodeValidationError(serverSideValidationResult.errors['NumberCode'][0]);
+            }
         }
     };
 

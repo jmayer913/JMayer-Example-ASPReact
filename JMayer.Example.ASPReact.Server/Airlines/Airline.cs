@@ -25,7 +25,12 @@ public class Airline : UserEditableDataObject
     /// </summary>
     [Required]
     [RegularExpression("^\\d{3}$", ErrorMessage = "The number code must be 3 digits.")]
-    public string NumberCode { get; set; } = "000";
+    public string NumberCode { get; set; } = ZeroNumberCode;
+
+    /// <summary>
+    /// The constant for the zero number code.
+    /// </summary>
+    public const string ZeroNumberCode = "000";
 
     /// <summary>
     /// The default constructor.

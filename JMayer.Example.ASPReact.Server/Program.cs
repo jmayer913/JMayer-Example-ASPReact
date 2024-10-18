@@ -72,3 +72,6 @@ app.MapFallbackToFile("/index.html");
 #endregion
 
 app.Run();
+
+//Used to expose the launching of the web application to xunit using WebApplicationFactory.
+public partial class Program { }

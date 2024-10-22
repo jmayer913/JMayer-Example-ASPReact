@@ -13,12 +13,22 @@ import './App.css';
 
 //The main layout of the website & the current page.
 function App() {
-    const [sideBarVisible, setSideBarVisible] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false);
+
+    //Hides the menu.
+    const hideMenu = () => {
+        setMenuVisible(false);
+    };
+
+    //Opens the menu.
+    const openMenu = () => {
+        setMenuVisible(true);
+    };
 
     return (
         <>
-            <Header setSideBarVisible={setSideBarVisible} />
-            <Menu sideBarVisible={sideBarVisible} setSideBarVisible={setSideBarVisible} />
+            <Header openMenu={openMenu} />
+            <Menu visible={menuVisible} hide={hideMenu} />
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<HomePage />} />

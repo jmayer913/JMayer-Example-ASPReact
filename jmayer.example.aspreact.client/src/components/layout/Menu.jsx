@@ -3,9 +3,9 @@ import { Sidebar } from 'primereact/sidebar';
 
 //The sidebar menu of the website.
 //@param {object} props The properties accepted by the component.
-//@param {bool} props.sideBarVisible Used to control if the sidebar menu is visibile or not.
-//@param {function} props.setSideBarVisible Used by the component to hide the sidebar menu.
-export default function Menu({ sideBarVisible, setSideBarVisible }) {
+//@param {bool} props.visible Used to control if the sidebar menu is visibile or not.
+//@param {function} props.hide Used by the component to hide the sidebar menu.
+export default function Menu({ visible, hide }) {
     //Define the menus to display.
     const menuItems = [
         {
@@ -23,7 +23,7 @@ export default function Menu({ sideBarVisible, setSideBarVisible }) {
     ];
 
     return (
-        <Sidebar visible={sideBarVisible} onHide={() => setSideBarVisible(false)}>
+        <Sidebar visible={visible} onHide={hide}>
             <PanelMenu model={menuItems} />
         </Sidebar>
     );

@@ -1,11 +1,11 @@
 import { Button } from 'primereact/button';
 
 //The top header of the website.
-//@param {function} props.setSideBarVisible Used by the component to show the sidebar menu.
-export default function Header({setSideBarVisible}) {
+//@param {function} props.openMenu Used by the component to show the sidebar menu.
+export default function Header({openMenu}) {
     return (
         <div className="flex flex-row align-items-center">
-            <Button icon="pi pi-bars" size="small" rounded onClick={() => setSideBarVisible(true)} />
+            <Button icon="pi pi-bars" size="small" rounded onClick={openMenu} />
             <h1 className="ml-3">ASP.NET Core / React Example</h1>
         </div>
     );

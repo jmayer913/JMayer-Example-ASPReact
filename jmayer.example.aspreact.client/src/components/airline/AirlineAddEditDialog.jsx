@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //Used to add or update an airline.
 //@param {object} props The properties accepted by the component.
@@ -16,6 +17,8 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
     const [icaoValidationError, setIcaoValidationError] = useState('');
     const [nameValidationError, setNameValidationError] = useState('');
     const [numberCodeValidationError, setNumberCodeValidationError] = useState('');
+    const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     //Send a request asking the server to add the new airline to the database.
     const addAirline = () => {
@@ -35,9 +38,12 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
                 else if (response.status == 400) {
                     response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
                 }
+                else {
+                    openErrorDialog('Failed to create the airline because of an error on the server.');
+                }
             })
             .catch(error => {
-                //TO DO: Add error handling.
+                openErrorDialog('Failed to communicate with the server.');
             });
         }
     };
@@ -51,6 +57,11 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         hide();
     };
 
+    //Hides the error dialog.
+    const hideErrorDialog = () => {
+        setErrorDialogVisible(false);
+    };
+
     //Validates all and returns a pass or fail.
     const isValid = () => {
         const iataPass = validateIATA();
@@ -61,7 +72,15 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         return iataPass && icoaPass && namePass && numberCodePass;
     }
 
+    //Opens the error dialog.
+    //@param {string} error The error to display to the user.
+    const openErrorDialog = (error) => {
+        setErrorMessage(error);
+        setErrorDialogVisible(true);
+    };
+
     //Processes the server side validation result and sets any validation errors.
+    //@param {object} serverSideValidationResult What the server found wrong with the user input.
     const processServerSideValidationResult = (serverSideValidationResult) => {
         if (Array.isArray(serverSideValidationResult.errors)) {
             for (const error of serverSideValidationResult.errors) {
@@ -159,11 +178,14 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
                     response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
                 }
                 else if (response.status == 409) {
-                    //TO DO: Display a conflict message on a conflict.
+                    openErrorDialog('The submitted data was detected to be out of date; please refresh and try again.');
+                }
+                else {
+                    openErrorDialog('Failed to update the airline because of an error on the server.');
                 }
             })
             .catch(error => {
-                //TO DO: Add error handling.
+                openErrorDialog('Failed to communicate with the server.');
             });
         }
     };
@@ -241,31 +263,35 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
     );
 
     return (
-        <Dialog breakpoints={{ '960px': '75vw', '641px': '90vw' }} className="p-fluid" footer={footer} header={newRecord ? 'Add Airline' : 'Edit Airline'} modal style={{ width: '32rem' }} visible={visible} onHide={closeDialog}>
-            <div className="field">
-                <label htmlFor="name" className="font-bold">Name</label>
-                <InputText id="name" value={airline.name} placeholder="Enter a name for the airline" onBlur={(e) => validateName()} onChange={(e) => setName(e.target.value)} />
-                {nameValidationError && <small className="p-error">{nameValidationError}</small>}
-            </div>
-            <div className="field">
-                <label htmlFor="description" className="font-bold">Description</label>
-                <InputText id="description" value={airline.description} placeholder="Optionally enter a description for the airline" onChange={(e) => setDescription(e.target.value)} />
-            </div>
-            <div className="field">
-                <label htmlFor="iata" className="font-bold">IATA</label>
-                <InputText id="iata" value={airline.iata} maxLength="2" keyfilter="alphanum" placeholder="Enter the 2 alphanumeric code" onBlur={(e) => validateIATA()} onChange={(e) => setIATA(e.target.value)} />
-                {iataValidationError && <small className="p-error">{iataValidationError}</small>}
-            </div>
-            <div className="field">
-                <label htmlFor="icao" className="font-bold">ICAO</label>
-                <InputText id="icao" value={airline.icao} maxLength="3" keyfilter="alpha" placeholder="Enter the 3 letter code" onBlur={(e) => validateICOA()} onChange={(e) => setICAO(e.target.value)} />
-                {icaoValidationError && <small className="p-error">{icaoValidationError}</small>}
-            </div>
-            <div className="field">
-                <label htmlFor="number-code" className="font-bold">Number Code</label>
-                <InputText id="number-code" value={airline.numberCode} maxLength="3" keyfilter="int" placeholder="Enter the 3 digit code" onBlur={(e) => validateNumberCode()} onChange={(e) => setNumberCode(e.target.value)} />
-                {numberCodeValidationError && <small className="p-error">{numberCodeValidationError}</small>}
-            </div>
-        </Dialog>
+        <>
+            <Dialog breakpoints={{ '960px': '75vw', '641px': '90vw' }} className="p-fluid" footer={footer} header={newRecord ? 'Add Airline' : 'Edit Airline'} modal style={{ width: '32rem' }} visible={visible} onHide={closeDialog}>
+                <div className="field">
+                    <label htmlFor="name" className="font-bold">Name</label>
+                    <InputText id="name" value={airline.name} placeholder="Enter a name for the airline" onBlur={(e) => validateName()} onChange={(e) => setName(e.target.value)} />
+                    {nameValidationError && <small className="p-error">{nameValidationError}</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="description" className="font-bold">Description</label>
+                    <InputText id="description" value={airline.description} placeholder="Optionally enter a description for the airline" onChange={(e) => setDescription(e.target.value)} />
+                </div>
+                <div className="field">
+                    <label htmlFor="iata" className="font-bold">IATA</label>
+                    <InputText id="iata" value={airline.iata} maxLength="2" keyfilter="alphanum" placeholder="Enter the 2 alphanumeric code" onBlur={(e) => validateIATA()} onChange={(e) => setIATA(e.target.value)} />
+                    {iataValidationError && <small className="p-error">{iataValidationError}</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="icao" className="font-bold">ICAO</label>
+                    <InputText id="icao" value={airline.icao} maxLength="3" keyfilter="alpha" placeholder="Enter the 3 letter code" onBlur={(e) => validateICOA()} onChange={(e) => setICAO(e.target.value)} />
+                    {icaoValidationError && <small className="p-error">{icaoValidationError}</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="number-code" className="font-bold">Number Code</label>
+                    <InputText id="number-code" value={airline.numberCode} maxLength="3" keyfilter="int" placeholder="Enter the 3 digit code" onBlur={(e) => validateNumberCode()} onChange={(e) => setNumberCode(e.target.value)} />
+                    {numberCodeValidationError && <small className="p-error">{numberCodeValidationError}</small>}
+                </div>
+            </Dialog>
+
+            <ErrorDialog errorMessage={errorMessage} visible={errorDialogVisible} hide={hideErrorDialog} />
+        </>
     );
 }

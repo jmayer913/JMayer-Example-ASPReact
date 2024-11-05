@@ -1,5 +1,7 @@
 using JMayer.Example.ASPReact.Server;
 using JMayer.Example.ASPReact.Server.Airlines;
+using JMayer.Example.ASPReact.Server.Flights;
+using JMayer.Example.ASPReact.Server.Gates;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 
@@ -14,9 +16,11 @@ FlightScheduleExampleBuilder flightScheduleExampleBuilder = new();
 flightScheduleExampleBuilder.Build();
 
 //Add the data layers. Because the example data needs to be built before registration and the data
-//layers are memory based, the middleware is not creating the data layers which is awkard but on a
+//layers are memory based, the middleware is not creating the data layers which is awkward but on a
 //normal website, the middleware would handle this.
 builder.Services.AddSingleton<IAirlineDataLayer, AirlineDataLayer>(factory => (AirlineDataLayer)flightScheduleExampleBuilder.AirlineDataLayer);
+builder.Services.AddSingleton<IGateDataLayer, GateDataLayer>(factory => (GateDataLayer)flightScheduleExampleBuilder.GateDataLayer);
+builder.Services.AddSingleton<IFlightDataLayer, FlightDataLayer>(factory => (FlightDataLayer)flightScheduleExampleBuilder.FlightDataLayer);
 
 #endregion
 

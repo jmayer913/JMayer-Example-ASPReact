@@ -12,9 +12,4 @@ public class AirlineController : UserEditableController<Airline, IAirlineDataLay
 {
     /// <inheritdoc/>
     public AirlineController(IAirlineDataLayer dataLayer, ILogger<AirlineController> logger) : base(dataLayer, logger) { }
-
-    public override Task<IActionResult> DeleteAsync(long integerID)
-    {
-        throw new NotImplementedException();
-    }
 }

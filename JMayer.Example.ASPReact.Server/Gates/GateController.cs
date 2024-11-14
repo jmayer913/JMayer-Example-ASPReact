@@ -1,5 +1,4 @@
-﻿using JMayer.Data.Database.DataLayer;
-using JMayer.Web.Mvc.Controller;
+﻿using JMayer.Web.Mvc.Controller;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -13,7 +12,7 @@ namespace JMayer.Example.ASPReact.Server.Gates;
 public class GateController : UserEditableController<Gate, IGateDataLayer>
 {
     /// <inheritdoc/>
-    public GateController(IUserEditableDataLayer<Gate> dataLayer, ILogger logger) : base(dataLayer, logger) { }
+    public GateController(IGateDataLayer dataLayer, ILogger<GateController> logger) : base(dataLayer, logger) { }
 
     /// <inheritdoc/>
     /// <remarks>

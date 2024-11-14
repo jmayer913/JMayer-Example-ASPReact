@@ -12,5 +12,5 @@ namespace JMayer.Example.ASPReact.Server.Flights;
 public class FlightController : UserEditableController<Flight, IFlightDataLayer>
 {
     /// <inheritdoc/>
-    public FlightController(IUserEditableDataLayer<Flight> dataLayer, ILogger logger) : base(dataLayer, logger) { }
+    public FlightController(IFlightDataLayer dataLayer, ILogger<FlightController> logger) : base(dataLayer, logger) { }
 }

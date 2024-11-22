@@ -11,7 +11,7 @@ public class CodeShare
     /// <summary>
     /// The property gets/sets the 
     /// </summary>
-    public int AirlineID { get; set; }
+    public long AirlineID { get; set; }
 
     /// <summary>
     /// The property gets/sets the flight number for the codeshare.

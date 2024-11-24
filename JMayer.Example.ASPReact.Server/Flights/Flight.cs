@@ -28,6 +28,13 @@ public class Flight : UserEditableDataObject
     public TimeSpan DepartTime { get; set; }
 
     /// <summary>
+    /// The property gets/sets the destination for the flight.
+    /// </summary>
+    [Required]
+    [RegularExpression("^[A-Z]{3}$", ErrorMessage = "The city must be 3 capital letters.")]
+    public string Destination { get; set; } = string.Empty;
+
+    /// <summary>
     /// The property gets/sets the number associated with the flight.
     /// </summary>
     [Required]
@@ -39,13 +46,6 @@ public class Flight : UserEditableDataObject
     /// </summary>
     [Required]
     public long GateID { get; set; }
-
-    /// <summary>
-    /// The property gets/sets the next destination for the flight.
-    /// </summary>
-    [Required]
-    [RegularExpression("^[A-Z]{3}$", ErrorMessage = "The city must be 3 capital letters.")]
-    public string NextDestination { get; set; } = string.Empty;
 
     /// <summary>
     /// The default constructor.
@@ -68,9 +68,9 @@ public class Flight : UserEditableDataObject
             AirlineID = flight.AirlineID;
             CodeShares.Clear();
             DepartTime = flight.DepartTime;
+            Destination = flight.Destination;
             FlightNumber = flight.FlightNumber;
             GateID = flight.GateID;
-            NextDestination = flight.NextDestination;
 
             foreach (var codeShare in flight.CodeShares)
             {

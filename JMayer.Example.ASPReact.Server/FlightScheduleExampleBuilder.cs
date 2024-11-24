@@ -94,11 +94,11 @@ public class FlightScheduleExampleBuilder
                     {
                         AirlineID = airline.Integer64ID,
                         CreatedOn = DateTime.Now,
+                        Destination = "ZZZ",
                         DepartTime = departTime,
                         FlightNumber = flightNumber.ToString().PadLeft(4, '0'),
                         GateID = gate.Integer64ID,
                         Name = $"{airline.IATA}{flightNumber.ToString().PadLeft(4, '0')}",
-                        NextDestination = "ZZZ",
                     });
 
                     flightNumber++;

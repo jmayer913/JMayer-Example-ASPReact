@@ -18,6 +18,11 @@ public class FlightEqualityComparerUnitTest
     private const string Description = "A Description";
 
     /// <summary>
+    /// The constant for the next destination.
+    /// </summary>
+    private const string Destination = "AAA";
+
+    /// <summary>
     /// The constant for the flight number.
     /// </summary>
     private const string FlightNumber = "1234A";
@@ -26,11 +31,6 @@ public class FlightEqualityComparerUnitTest
     /// The constant for the gate ID.
     /// </summary>
     private const long GateID = 2;
-
-    /// <summary>
-    /// The constant for the next destination.
-    /// </summary>
-    private const string NextDestination = "AAA";
 
     /// <summary>
     /// The constant for the ID.
@@ -109,6 +109,21 @@ public class FlightEqualityComparerUnitTest
     }
 
     /// <summary>
+    /// The method verifies equality failure when the Destintion property is different between the two objects.
+    /// </summary>
+    [Fact]
+    public void VerifyFailureDestination()
+    {
+        Flight flight1 = new()
+        {
+            Destination = Destination,
+        };
+        Flight flight2 = new();
+
+        Assert.False(new FlightEqualityComparer().Equals(flight1, flight2));
+    }
+
+    /// <summary>
     /// The method verifies equality failure when the FlightNumber property is different between the two objects.
     /// </summary>
     [Fact]
@@ -169,21 +184,6 @@ public class FlightEqualityComparerUnitTest
     }
 
     /// <summary>
-    /// The method verifies equality failure when the NextDestintion property is different between the two objects.
-    /// </summary>
-    [Fact]
-    public void VerifyFailureNextDestination()
-    {
-        Flight flight1 = new()
-        {
-            NextDestination = NextDestination,
-        };
-        Flight flight2 = new();
-
-        Assert.False(new FlightEqualityComparer().Equals(flight1, flight2));
-    }
-
-    /// <summary>
     /// The method verifies equality failure when an object and null are compared.
     /// </summary>
     [Fact]
@@ -196,12 +196,12 @@ public class FlightEqualityComparerUnitTest
             CreatedOn = DateTime.Now,
             DepartTime = DateTime.Now.TimeOfDay,
             Description = Description,
+            Destination = Destination,
             FlightNumber = FlightNumber,
             GateID = GateID,
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
-            NextDestination = NextDestination,
         };
 
         Assert.False(new FlightEqualityComparer().Equals(flight, null));
@@ -221,12 +221,12 @@ public class FlightEqualityComparerUnitTest
             CreatedOn = DateTime.Now,
             DepartTime = DateTime.Now.TimeOfDay,
             Description = Description,
+            Destination = Destination,
             FlightNumber = FlightNumber,
             GateID = GateID,
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
-            NextDestination = NextDestination,
         };
         Flight flight2 = new(flight1);
 
@@ -247,12 +247,12 @@ public class FlightEqualityComparerUnitTest
             CreatedOn = DateTime.Now,
             DepartTime = DateTime.Now.TimeOfDay,
             Description = Description,
+            Destination = Destination,
             FlightNumber = FlightNumber,
             GateID = GateID,
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
-            NextDestination = NextDestination,
         };
         Flight flight2 = new(flight1)
         {
@@ -276,12 +276,12 @@ public class FlightEqualityComparerUnitTest
             CreatedOn = DateTime.Now,
             DepartTime = DateTime.Now.TimeOfDay,
             Description = Description,
+            Destination = Destination,
             FlightNumber = FlightNumber,
             GateID = GateID,
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
-            NextDestination = NextDestination,
         };
         Flight flight2 = new(flight1)
         {
@@ -305,12 +305,12 @@ public class FlightEqualityComparerUnitTest
             CreatedOn = DateTime.Now,
             DepartTime = DateTime.Now.TimeOfDay,
             Description = Description,
+            Destination = Destination,
             FlightNumber = FlightNumber,
             GateID = GateID,
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
-            NextDestination = NextDestination,
         };
         Flight flight2 = new(flight1)
         {

@@ -51,13 +51,13 @@ public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
 
         foreach (var codeShare in dataObject.CodeShares)
         {
-            if (await _airlineDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.AirlineID, cancellationToken) == false)
+            if (await _airlineDataLayer.ExistAsync(obj => obj.Integer64ID == codeShare.AirlineID, cancellationToken) == false)
             {
                 validationResults.Add(new ValidationResult($"The {codeShare.AirlineID} airline for the codeshare was not found in the data store.", [nameof(CodeShare.AirlineID)]));
             }
         }
 
-        if (await ExistAsync(obj => obj.Integer64ID != dataObject.Integer64ID && obj.AirlineID == dataObject.AirlineID && obj.FlightNumber == dataObject.FlightNumber && obj.NextDestination == dataObject.NextDestination, cancellationToken) == true)
+        if (await ExistAsync(obj => obj.Integer64ID != dataObject.Integer64ID && obj.AirlineID == dataObject.AirlineID && obj.FlightNumber == dataObject.FlightNumber && obj.Destination == dataObject.Destination, cancellationToken) == true)
         {
             validationResults.Add(new ValidationResult("The flight already exists in the active schedule.", [nameof(Flight.FlightNumber)]));
         }

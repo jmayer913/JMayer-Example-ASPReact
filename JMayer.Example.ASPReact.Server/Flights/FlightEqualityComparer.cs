@@ -72,7 +72,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
             && (_excludeID || x.Integer64ID == y.Integer64ID)
             && (_excludeLastEditedOn || x.LastEditedBy == y.LastEditedBy)
             && x.Name == y.Name
-            && x.NextDestination == y.NextDestination;
+            && x.Destination == y.Destination;
     }
 
     /// <inheritdoc/>

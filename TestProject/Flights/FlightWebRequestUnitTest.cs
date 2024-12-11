@@ -24,6 +24,11 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     private readonly WebApplicationFactory<Program> _factory;
 
     /// <summary>
+    /// The constant for the airline for the airline cascade delete test.
+    /// </summary>
+    private const string AirlineCascadeDelete = "ZZ";
+
+    /// <summary>
     /// The constant for a bad airline ID.
     /// </summary>
     private const long BadAirlineID = 99;
@@ -69,40 +74,64 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     private const string FlightNumberAddTestGateNotFound = "9996";
 
     /// <summary>
+    /// The constant for the flight number for the cascade delete test.
+    /// </summary>
+    private const string FlightNumberCascadeDelete = "9995";
+
+    /// <summary>
     /// The constant for the flight number for the delete test.
     /// </summary>
-    private const string FlightNumberDeleteTest = "9995";
+    private const string FlightNumberDeleteTest = "9994";
 
     /// <summary>
     /// The constant for the flight number for the airline not found test.
     /// </summary>
-    private const string FlightNumberUpdateTestAirlineNotFound = "9994";
+    private const string FlightNumberUpdateTestAirlineNotFound = "9993";
 
     /// <summary>
     /// The constant for the flight number for the codeshare airline not found test.
     /// </summary>
-    private const string FlightNumberUpdateTestCodeShareAirlineNotFound = "9993";
+    private const string FlightNumberUpdateTestCodeShareAirlineNotFound = "9992";
 
     /// <summary>
     /// The constant for the duplicate flight number for the update test.
     /// </summary>
-    private const string FlightNumberUpdateTestDuplicate1 = "9992";
+    private const string FlightNumberUpdateTestDuplicate1 = "9991";
 
     /// <summary>
     /// The constant for the duplicate flight number for the update test.
     /// </summary>
-    private const string FlightNumberUpdateTestDuplicate2 = "9991";
+    private const string FlightNumberUpdateTestDuplicate2 = "9990";
 
     /// <summary>
     /// The constant for the flight number for the gate not found test.
     /// </summary>
-    private const string FlightNumberUpdateTestGateNotFound = "9990";
+    private const string FlightNumberUpdateTestGateNotFound = "9989";
 
     /// <summary>
     /// The dependency injection constructor.
     /// </summary>
     /// <param name="factory">The factory for the web application.</param>
     public FlightWebRequestUnitTest(WebApplicationFactory<Program> factory) => _factory = factory;
+
+    /// <summary>
+    /// The method creates an airline.
+    /// </summary>
+    /// <param name="iata">The IATA code for the airline.</param>
+    /// <returns>An airline or null if it failed to create.</returns>
+    private async Task<Airline?> CreateAirlineAsync(string iata)
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        Airlines.AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = iata,
+            Name = iata,
+        });
+
+        return operationResult.DataObject as Airline;
+    }
 
     /// <summary>
     /// The method returns a list of CodeShare objects created from the comma separated list.
@@ -413,6 +442,55 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
 
         long count = await dataLayer.CountAsync();
         Assert.True(count > 0);
+    }
+
+    /// <summary>
+    /// The method verifies on the server-side if an airline is deleted, the associated flights are also deleted.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyDeleteAirlineCascade()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        FlightDataLayer dataLayer = new(httpClient);
+
+        Airline? airline = await CreateAirlineAsync(AirlineCascadeDelete);
+
+        if (airline == null)
+        {
+            Assert.Fail("Failed to create the airline.");
+            return;
+        }
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
+        {
+            AirlineID = DefaultAirlineID,
+            DepartTime = DateTime.Now.TimeOfDay,
+            FlightNumber = FlightNumberCascadeDelete,
+            GateID = DefaultGateID,
+            Name = "Delete Airline Cascade Test",
+            Destination = DefaultAirportCode,
+        });
+
+        if (!operationResult.IsSuccessStatusCode)
+        {
+            Assert.Fail("Failed to create the flight.");
+            return;
+        }
+
+        await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline);
+
+        List<Flight>? flights = await dataLayer.GetAllAsync();
+
+        if (flights == null)
+        {
+            Assert.Fail("Failed to query the flights.");
+        }
+        else
+        {
+            flights = flights.Where(obj => obj.AirlineID == airline.Integer64ID).ToList();
+            Assert.Empty(flights);
+        }
     }
 
     /// <summary>

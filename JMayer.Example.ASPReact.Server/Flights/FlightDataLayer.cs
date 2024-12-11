@@ -29,11 +29,26 @@ public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
     {
         _airlineDataLayer = airlineDataLayer;
         _gateDataLayer = gateDataLayer;
+
+        _airlineDataLayer.Deleted += AirlineDataLayer_Deleted;
+    }
+
+    /// <summary>
+    /// The method deletes any flights associated with the deleted airlines.
+    /// </summary>
+    /// <param name="sender">The asset data layer.</param>
+    /// <param name="e">The arguments which contain the deleted assets.</param>
+    private async void AirlineDataLayer_Deleted(object? sender, Data.Database.DataLayer.DeletedEventArgs e)
+    {
+        foreach (Airline airline in e.DataObjects.Cast<Airline>())
+        {
+            await DeleteAsync(obj => obj.AirlineID == airline.Integer64ID);
+        }
     }
 
     /// <inheritdoc/>
     /// <remarks>
-    /// Overriden to confirm references exists and the flight is unique (airline, flight number & next destination).
+    /// Overriden to confirm references exist and the flight is unique (airline, flight number & next destination).
     /// </remarks>
     public override async Task<List<ValidationResult>> ValidateAsync(Flight dataObject, CancellationToken cancellationToken = default)
     {

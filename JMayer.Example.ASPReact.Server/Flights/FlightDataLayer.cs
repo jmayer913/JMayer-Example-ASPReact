@@ -1,6 +1,7 @@
 ﻿using JMayer.Data.Database.DataLayer.MemoryStorage;
 using JMayer.Example.ASPReact.Server.Airlines;
 using JMayer.Example.ASPReact.Server.Gates;
+using JMayer.Example.ASPReact.Server.SortDestinations;
 using System.ComponentModel.DataAnnotations;
 
 namespace JMayer.Example.ASPReact.Server.Flights;
@@ -21,14 +22,21 @@ public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
     private readonly IGateDataLayer _gateDataLayer;
 
     /// <summary>
+    /// Used to access the sort desintation data.
+    /// </summary>
+    private readonly ISortDestinationDataLayer _sortDestinationDataLayer;
+
+    /// <summary>
     /// The dependency injection constructor.
     /// </summary>
     /// <param name="airlineDataLayer">Used to access the airline data.</param>
     /// <param name="gateDataLayer">Used to access the gate data.</param>
-    public FlightDataLayer(IAirlineDataLayer airlineDataLayer, IGateDataLayer gateDataLayer)
+    /// <param name="sortDestinationDataLayer">Used to access the sort desintation data.</param>
+    public FlightDataLayer(IAirlineDataLayer airlineDataLayer, IGateDataLayer gateDataLayer, ISortDestinationDataLayer sortDestinationDataLayer)
     {
         _airlineDataLayer = airlineDataLayer;
         _gateDataLayer = gateDataLayer;
+        _sortDestinationDataLayer = sortDestinationDataLayer;
 
         _airlineDataLayer.Deleted += AirlineDataLayer_Deleted;
     }
@@ -62,6 +70,11 @@ public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
         if (await _gateDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.GateID, cancellationToken) == false)
         {
             validationResults.Add(new ValidationResult($"The {dataObject.GateID} gate was not found in the data store.", [nameof(Flight.GateID)]));
+        }
+
+        if (await _sortDestinationDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.SortDestinationID, cancellationToken) == false)
+        {
+            validationResults.Add(new ValidationResult($"The {dataObject.SortDestinationID} sort destination was not found in the data store.", [nameof(Flight.SortDestinationID)]));
         }
 
         foreach (var codeShare in dataObject.CodeShares)

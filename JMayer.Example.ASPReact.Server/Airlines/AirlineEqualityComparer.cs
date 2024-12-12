@@ -31,12 +31,12 @@ public class AirlineEqualityComparer : IEqualityComparer<Airline>
     /// The property constructor.
     /// </summary>
     /// <param name="excludeCreatedOn">Excludes the CreatedOn property from the equals check.</param>
-    /// <param name="exlucdeID">Excludes the ID property from the equals check.</param>
+    /// <param name="excludeID">Excludes the ID property from the equals check.</param>
     /// <param name="excludeLastEditedOn">Excludes the LastEditedOn property from the equals check.</param>
-    public AirlineEqualityComparer(bool excludeCreatedOn, bool exlucdeID, bool excludeLastEditedOn)
+    public AirlineEqualityComparer(bool excludeCreatedOn, bool excludeID, bool excludeLastEditedOn)
     {
         _excludeCreatedOn = excludeCreatedOn;
-        _excludeID = exlucdeID;
+        _excludeID = excludeID;
         _excludeLastEditedOn = excludeLastEditedOn;
     }
 

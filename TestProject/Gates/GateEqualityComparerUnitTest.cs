@@ -8,11 +8,6 @@ namespace TestProject.Gates;
 public class GateEqualityComparerUnitTest
 {
     /// <summary>
-    /// The constant for the airline ID.
-    /// </summary>
-    private const long AirlineID = 2;
-
-    /// <summary>
     /// The constant for the description.
     /// </summary>
     private const string Description = "A Description";
@@ -26,21 +21,6 @@ public class GateEqualityComparerUnitTest
     /// The constant for the name.
     /// </summary>
     private const string Name = "A Name";
-
-    /// <summary>
-    /// The method verifies equality failure when the AirlineID property is different between the two objects.
-    /// </summary>
-    [Fact]
-    public void VerifyFailureAirlineID()
-    {
-        Gate gate1 = new()
-        {
-            AirlineID = AirlineID,
-        };
-        Gate gate2 = new();
-
-        Assert.False(new GateEqualityComparer().Equals(gate1, gate2));
-    }
 
     /// <summary>
     /// The method verifies equality failure when two nulls are compared.
@@ -101,7 +81,6 @@ public class GateEqualityComparerUnitTest
     {
         Gate gate = new()
         {
-            AirlineID = AirlineID,
             CreatedOn = DateTime.Now,
             Description = Description,
             Integer64ID = ID,
@@ -121,7 +100,6 @@ public class GateEqualityComparerUnitTest
     {
         Gate gate1 = new()
         {
-            AirlineID = AirlineID,
             CreatedOn = DateTime.Now,
             Description = Description,
             Integer64ID = ID,
@@ -142,7 +120,6 @@ public class GateEqualityComparerUnitTest
     {
         Gate gate1 = new()
         {
-            AirlineID = AirlineID,
             CreatedOn = DateTime.Now,
             Description = Description,
             Integer64ID = ID,
@@ -166,7 +143,6 @@ public class GateEqualityComparerUnitTest
     {
         Gate gate1 = new()
         {
-            AirlineID = AirlineID,
             CreatedOn = DateTime.Now,
             Description = Description,
             Integer64ID = ID,
@@ -190,7 +166,6 @@ public class GateEqualityComparerUnitTest
     {
         Gate gate1 = new()
         {
-            AirlineID = AirlineID,
             CreatedOn = DateTime.Now,
             Description = Description,
             Integer64ID = ID,

@@ -48,6 +48,12 @@ public class Flight : UserEditableDataObject
     public long GateID { get; set; }
 
     /// <summary>
+    /// The property gets/sets the id for the sort destintion assigned to the flight.
+    /// </summary>
+    [Required]
+    public long SortDestinationID { get; set; }
+
+    /// <summary>
     /// The default constructor.
     /// </summary>
     public Flight() { }
@@ -71,6 +77,7 @@ public class Flight : UserEditableDataObject
             Destination = flight.Destination;
             FlightNumber = flight.FlightNumber;
             GateID = flight.GateID;
+            SortDestinationID = flight.SortDestinationID;
 
             foreach (var codeShare in flight.CodeShares)
             {

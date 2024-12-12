@@ -54,6 +54,11 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     private const long DefaultGateID = 1;
 
     /// <summary>
+    /// The constant for the default sort destination ID.
+    /// </summary>
+    private const long DefaultSortDestinationID = 1;
+
+    /// <summary>
     /// The constant for the flight number for the airline not found test.
     /// </summary>
     private const string FlightNumberAddTestAirlineNotFound = "9999";
@@ -183,18 +188,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     }
 
     /// <summary>
-    /// The method returns the airline.
-    /// </summary>
-    /// <param name="id">The ID to search for.</param>
-    /// <returns>The airline or null if not found.</returns>
-    private async Task<Airline?> GetAirlineByIDAsync(long id)
-    {
-        HttpClient httpClient = _factory.CreateClient();
-        Airlines.AirlineDataLayer dataLayer = new(httpClient);
-        return await dataLayer.GetSingleAsync(id);
-    }
-
-    /// <summary>
     /// The method returns the gate.
     /// </summary>
     /// <param name="name">The name to search for.</param>
@@ -227,6 +220,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Add Duplicate Flight Test 1",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (!operationResult.IsSuccessStatusCode)
@@ -243,6 +237,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Add Duplicate Flight Test New",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -267,16 +262,19 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// The method verifies the HTTP data layer can request a flight to be created by the server and the server can successfully process the request.
     /// </summary>
     /// <param name="gateName">The name of the gate.</param>
+    /// <param name="airlineIATA">The IATA code for the airline.</param>
     /// <param name="flightNumber">The identifier for the flight.</param>
     /// <param name="destination">The destination for the flight.</param>
     /// <param name="codeshareCommaSeparatedList">A comma separated list of codeshares; each element will be the airline's IATA concatenated with the flight number used by the airline.</param>
     /// <returns>A Task object for the async.</returns>
     [Theory]
-    [InlineData("A1", "3124", "ZZZ", null)]
-    [InlineData("B1", "3985", "ZZZ", "AA0235")]
-    [InlineData("C1", "3985", "ZZZ", "AA9382,DL8274")]
-    public async Task VerifyAddFlight(string gateName, string flightNumber, string destination, string? codeshareCommaSeparatedList)
+    [InlineData("A1", "AA", "3124", "ZZZ", null)]
+    [InlineData("B1", "DL", "3985", "ZZZ", "AA0235")]
+    [InlineData("C1", "WN", "3985", "ZZZ", "AA9382,DL8274")]
+    public async Task VerifyAddFlight(string gateName, string airlineIATA, string flightNumber, string destination, string? codeshareCommaSeparatedList)
     {
+#warning Need to add sort destination as a parameter.
+
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
 
@@ -288,7 +286,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             return;
         }
         
-        Airline? airline = await GetAirlineByIDAsync(gate.AirlineID);
+        Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
 
         if (airline == null)
         {
@@ -306,7 +304,8 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             FlightNumber = flightNumber,
             GateID = gate.Integer64ID,
             Name = $"{airline.IATA}{flightNumber}",
-            Destination = destination
+            Destination = destination,
+            SortDestinationID = DefaultSortDestinationID,
         };
         OperationResult operationResult = await dataLayer.CreateAsync(flight);
 
@@ -333,6 +332,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Add Flight Airline Not Found Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -372,6 +372,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Add Flight CodeShare Airline Not Found Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -410,6 +411,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = BadGateID,
             Name = "Add Flight Gate Not Found Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -470,6 +472,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Delete Airline Cascade Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (!operationResult.IsSuccessStatusCode)
@@ -511,6 +514,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Delete Flight Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.DataObject is Flight flight)
@@ -604,6 +608,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Update Duplicate Flight Test 1",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (!operationResult.IsSuccessStatusCode)
@@ -620,6 +625,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Update Duplicate Flight Test New",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight secondFlight)
@@ -633,6 +639,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Integer64ID = secondFlight.Integer64ID,
                 Name = "Update Duplicate Flight Test New",
                 Destination = DefaultAirportCode,
+                SortDestinationID = DefaultSortDestinationID,
             });
 
             //The operation must have failed.
@@ -662,16 +669,19 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// The method verifies the HTTP data layer can request a flight to be updated by the server and the server can successfully process the request.
     /// </summary>
     /// <param name="gateName">The name of the gate.</param>
+    /// <param name="airlineIATA">The IATA code for the airline.</param>
     /// <param name="flightNumber">The identifier for the flight.</param>
     /// <param name="destination">The destination for the flight.</param>
     /// <param name="codeshareCommaSeparatedList">A comma separated list of codeshares; each element will be the airline's IATA concatenated with the flight number used by the airline.</param>
     /// <returns>A Task object for the async.</returns>
     [Theory]
-    [InlineData("A1", "4592", "ZZA", null)]
-    [InlineData("B1", "4201", "ZZB", "AA5928")]
-    [InlineData("C1", "4728", "ZZC", "AA8382,DL7274")]
-    public async Task VerifyUpdateFlight(string gateName, string flightNumber, string destination, string? codeshareCommaSeparatedList)
+    [InlineData("A1", "AA", "4592", "ZZA", null)]
+    [InlineData("B1", "DL", "4201", "ZZB", "AA5928")]
+    [InlineData("C1", "WN", "4728", "ZZC", "AA8382,DL7274")]
+    public async Task VerifyUpdateFlight(string gateName, string airlineIATA, string flightNumber, string destination, string? codeshareCommaSeparatedList)
     {
+#warning Need to add sort destination as a parameter.
+
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
 
@@ -683,7 +693,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             return;
         }
 
-        Airline? airline = await GetAirlineByIDAsync(gate.AirlineID);
+        Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
 
         if (airline == null)
         {
@@ -699,6 +709,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = gate.Integer64ID,
             Name = $"{airline.IATA}{flightNumber}",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
@@ -714,7 +725,8 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 GateID = gate.Integer64ID,
                 Integer64ID = createdFlight.Integer64ID,
                 Name = $"{airline.IATA}{flightNumber}",
-                Destination = destination
+                Destination = destination,
+                SortDestinationID = DefaultSortDestinationID,
             };
             operationResult = await dataLayer.UpdateAsync(flight);
 
@@ -746,6 +758,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Update Flight Airline Not Found Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
@@ -759,6 +772,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Integer64ID = createdFlight.Integer64ID,
                 Name = "Update Flight Airline Not Found Test",
                 Destination = DefaultAirportCode,
+                SortDestinationID = DefaultSortDestinationID,
             });
 
             //The operation must have failed.
@@ -802,6 +816,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Update Flight CodeShare Airline Not Found Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
@@ -816,6 +831,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Integer64ID = createdFlight.Integer64ID,
                 Name = "Update Flight CodeShare Airline Not Found Test",
                 Destination = DefaultAirportCode,
+                SortDestinationID = DefaultSortDestinationID,
             });
 
             //The operation must have failed.
@@ -859,6 +875,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             GateID = DefaultGateID,
             Name = "Update Flight Gate Not Found Test",
             Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
@@ -872,6 +889,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Integer64ID = createdFlight.Integer64ID,
                 Name = "Update Flight Gate Not Found Test",
                 Destination = DefaultAirportCode,
+                SortDestinationID = DefaultSortDestinationID,
             });
 
             //The operation must have failed.

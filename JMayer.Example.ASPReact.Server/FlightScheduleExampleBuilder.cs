@@ -1,6 +1,7 @@
 ﻿using JMayer.Example.ASPReact.Server.Airlines;
 using JMayer.Example.ASPReact.Server.Flights;
 using JMayer.Example.ASPReact.Server.Gates;
+using JMayer.Example.ASPReact.Server.SortDestinations;
 
 namespace JMayer.Example.ASPReact.Server;
 
@@ -25,11 +26,16 @@ public class FlightScheduleExampleBuilder
     public IGateDataLayer GateDataLayer { get; init; } = new GateDataLayer();
 
     /// <summary>
+    /// The property gets/sets the data layer used to interact with the sort destinations.
+    /// </summary>
+    public ISortDestinationDataLayer SortDestinationDataLayer { get; init; } = new SortDestinationDataLayer();
+
+    /// <summary>
     /// The default constructor.
     /// </summary>
     public FlightScheduleExampleBuilder()
     {
-        FlightDataLayer = new FlightDataLayer(AirlineDataLayer, GateDataLayer);
+        FlightDataLayer = new FlightDataLayer(AirlineDataLayer, GateDataLayer, SortDestinationDataLayer);
     }
 
     /// <summary>
@@ -39,6 +45,7 @@ public class FlightScheduleExampleBuilder
     {
         BuildAirlines();
         BuildGates();
+        BuildSortDestinations();
         BuildFlights();
     }
 
@@ -76,33 +83,45 @@ public class FlightScheduleExampleBuilder
     private void BuildFlights()
     {
         List<Airline> airlines = AirlineDataLayer.GetAllAsync().Result;
-        List<Gate> gates = GateDataLayer.GetAllAsync().Result;
 
         int flightNumber = 1000;
+        long gateID = 1;
+        long sortDestinationID = 1;
         TimeSpan departTime = new(4, 0, 0);
         TimeSpan operationalEnd = new(22, 0, 0);
+
+        long gateCount = GateDataLayer.CountAsync().Result;
+        long sortDestinationCount = SortDestinationDataLayer.CountAsync().Result;
 
         while (departTime < operationalEnd)
         {
             foreach (Airline airline in airlines)
             {
-                List<Gate> airlineGates = gates.Where(obj => obj.AirlineID == airline.Integer64ID).ToList();
-
-                foreach (Gate gate in airlineGates)
+                _ = FlightDataLayer.CreateAsync(new Flight()
                 {
-                    _ = FlightDataLayer.CreateAsync(new Flight()
-                    {
-                        AirlineID = airline.Integer64ID,
-                        CreatedOn = DateTime.Now,
-                        Destination = "ZZZ",
-                        DepartTime = departTime,
-                        FlightNumber = flightNumber.ToString().PadLeft(4, '0'),
-                        GateID = gate.Integer64ID,
-                        Name = $"{airline.IATA}{flightNumber.ToString().PadLeft(4, '0')}",
-                    });
+                    AirlineID = airline.Integer64ID,
+                    CreatedOn = DateTime.Now,
+                    Destination = "ZZZ",
+                    DepartTime = departTime,
+                    FlightNumber = flightNumber.ToString().PadLeft(4, '0'),
+                    GateID = gateID,
+                    Name = $"{airline.IATA}{flightNumber.ToString().PadLeft(4, '0')}",
+                    SortDestinationID = sortDestinationID,
+                });
 
-                    flightNumber++;
-                    departTime = departTime.Add(TimeSpan.FromMinutes(10));
+                flightNumber++;
+                gateID++;
+                sortDestinationID++;
+                departTime = departTime.Add(TimeSpan.FromMinutes(10));
+
+                if (gateID > gateCount)
+                {
+                    gateID = 1;
+                }
+
+                if (sortDestinationID > sortDestinationCount)
+                {
+                    sortDestinationID = 1;
                 }
             }
         }
@@ -113,39 +132,54 @@ public class FlightScheduleExampleBuilder
     /// </summary>
     private void BuildGates()
     {
-        List<Airline> airlines = AirlineDataLayer.GetAllAsync().Result;
-
         _ = GateDataLayer.CreateAsync(new Gate()
         {
-            AirlineID = airlines[0].Integer64ID,
             Name = "A1",
         });
         _ = GateDataLayer.CreateAsync(new Gate()
         {
-            AirlineID = airlines[0].Integer64ID,
             Name = "A2",
         });
 
         _ = GateDataLayer.CreateAsync(new Gate()
         {
-            AirlineID = airlines[1].Integer64ID,
             Name = "B1",
         });
         _ = GateDataLayer.CreateAsync(new Gate()
         {
-            AirlineID = airlines[1].Integer64ID,
             Name = "B2",
         });
 
         _ = GateDataLayer.CreateAsync(new Gate()
         {
-            AirlineID = airlines[2].Integer64ID,
             Name = "C1",
         });
         _ = GateDataLayer.CreateAsync(new Gate()
         {
-            AirlineID = airlines[2].Integer64ID,
             Name = "C2",
+        });
+    }
+
+    /// <summary>
+    /// The method builds the sort destinations.
+    /// </summary>
+    private void BuildSortDestinations()
+    {
+        _ = SortDestinationDataLayer.CreateAsync(new SortDestination()
+        {
+            Name = "MU1",
+        });
+        _ = SortDestinationDataLayer.CreateAsync(new SortDestination()
+        {
+            Name = "MU2",
+        });
+        _ = SortDestinationDataLayer.CreateAsync(new SortDestination()
+        {
+            Name = "MU3",
+        });
+        _ = SortDestinationDataLayer.CreateAsync(new SortDestination()
+        {
+            Name = "MU4",
         });
     }
 }

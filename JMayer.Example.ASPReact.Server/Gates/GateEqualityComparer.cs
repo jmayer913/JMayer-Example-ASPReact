@@ -31,7 +31,7 @@ public class GateEqualityComparer : IEqualityComparer<Gate>
     /// The property constructor.
     /// </summary>
     /// <param name="excludeCreatedOn">Excludes the CreatedOn property from the equals check.</param>
-    /// <param name="exlucdeID">Excludes the ID property from the equals check.</param>
+    /// <param name="excludeID">Excludes the ID property from the equals check.</param>
     /// <param name="excludeLastEditedOn">Excludes the LastEditedOn property from the equals check.</param>
     public GateEqualityComparer(bool excludeCreatedOn, bool excludeID, bool excludeLastEditedOn)
     {
@@ -48,8 +48,7 @@ public class GateEqualityComparer : IEqualityComparer<Gate>
             return false;
         }
 
-        return x.AirlineID == y.AirlineID
-            && (_excludeCreatedOn || x.CreatedOn == y.CreatedOn)
+        return (_excludeCreatedOn || x.CreatedOn == y.CreatedOn)
             && x.Description == y.Description
             && (_excludeID || x.Integer64ID == y.Integer64ID)
             && (_excludeLastEditedOn || x.LastEditedBy == y.LastEditedBy)

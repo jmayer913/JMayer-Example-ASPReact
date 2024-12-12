@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace JMayer.Example.ASPReact.Server.Flights;
+namespace JMayer.Example.ASPReact.Server.SortDestinations;
 
 /// <summary>
-/// The class manages comparing two Flight objects.
+/// The class manages comparing two SortDestination objects.
 /// </summary>
-public class FlightEqualityComparer : IEqualityComparer<Flight>
+public class SortDestinationEqualityComparer : IEqualityComparer<SortDestination>
 {
     /// <summary>
     /// Excludes the CreatedOn property from the equals check.
@@ -25,7 +25,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
     /// <summary>
     /// The default constructor.
     /// </summary>
-    public FlightEqualityComparer() { }
+    public SortDestinationEqualityComparer() { }
 
     /// <summary>
     /// The property constructor.
@@ -33,7 +33,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
     /// <param name="excludeCreatedOn">Excludes the CreatedOn property from the equals check.</param>
     /// <param name="excludeID">Excludes the ID property from the equals check.</param>
     /// <param name="excludeLastEditedOn">Excludes the LastEditedOn property from the equals check.</param>
-    public FlightEqualityComparer(bool excludeCreatedOn, bool excludeID, bool excludeLastEditedOn)
+    public SortDestinationEqualityComparer(bool excludeCreatedOn, bool excludeID, bool excludeLastEditedOn)
     {
         _excludeCreatedOn = excludeCreatedOn;
         _excludeID = excludeID;
@@ -41,40 +41,20 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
     }
 
     /// <inheritdoc/>
-    public bool Equals(Flight? x, Flight? y)
+    public bool Equals(SortDestination? x, SortDestination? y)
     {
         if (x == null || y == null)
         {
             return false;
         }
 
-        if (x.CodeShares.Count != y.CodeShares.Count)
-        {
-            return false;
-        }
-        else
-        {
-            for (int index = 0; index < x.CodeShares.Count; index++)
-            {
-                if (new CodeShareEqualityComparer().Equals(x.CodeShares[index], y.CodeShares[index]) == false)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return x.AirlineID == y.AirlineID
-            && (_excludeCreatedOn || x.CreatedOn == y.CreatedOn)
-            && x.DepartTime == y.DepartTime
+        return (_excludeCreatedOn || x.CreatedOn == y.CreatedOn)
             && x.Description == y.Description
-            && x.FlightNumber == y.FlightNumber
-            && x.GateID == y.GateID
             && (_excludeID || x.Integer64ID == y.Integer64ID)
             && (_excludeLastEditedOn || x.LastEditedBy == y.LastEditedBy)
-            && x.Name == y.Name
-            && x.Destination == y.Destination;
+            && x.Name == y.Name;
     }
 
     /// <inheritdoc/>
-    public int GetHashCode([DisallowNull] Flight obj) => obj.GetHashCode();
+    public int GetHashCode([DisallowNull] SortDestination obj) => obj.GetHashCode();
 }

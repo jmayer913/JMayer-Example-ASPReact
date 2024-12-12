@@ -2,6 +2,7 @@ using JMayer.Example.ASPReact.Server;
 using JMayer.Example.ASPReact.Server.Airlines;
 using JMayer.Example.ASPReact.Server.Flights;
 using JMayer.Example.ASPReact.Server.Gates;
+using JMayer.Example.ASPReact.Server.SortDestinations;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 
@@ -21,6 +22,7 @@ flightScheduleExampleBuilder.Build();
 builder.Services.AddSingleton<IAirlineDataLayer, AirlineDataLayer>(factory => (AirlineDataLayer)flightScheduleExampleBuilder.AirlineDataLayer);
 builder.Services.AddSingleton<IGateDataLayer, GateDataLayer>(factory => (GateDataLayer)flightScheduleExampleBuilder.GateDataLayer);
 builder.Services.AddSingleton<IFlightDataLayer, FlightDataLayer>(factory => (FlightDataLayer)flightScheduleExampleBuilder.FlightDataLayer);
+builder.Services.AddSingleton<ISortDestinationDataLayer, SortDestinationDataLayer>(factory => (SortDestinationDataLayer)flightScheduleExampleBuilder.SortDestinationDataLayer);
 
 #endregion
 

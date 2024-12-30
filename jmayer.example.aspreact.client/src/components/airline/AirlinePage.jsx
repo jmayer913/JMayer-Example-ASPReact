@@ -7,6 +7,8 @@ import { Toolbar } from 'primereact/toolbar';
 import AirlineAddEditDialog from './AirlineAddEditDialog.jsx';
 import AirlineDeleteConfirmDialog from './AirlineDeleteConfirmDialog.jsx'
 
+//TO DO: I need to figure out if the dataTableSelectedAirline and selection options are needed to edit/delete an airline.
+
 //The airline page. Users can manage the airlines.
 export default function AirlinePage() {
     //Used when adding a new airline.
@@ -63,7 +65,7 @@ export default function AirlinePage() {
 
     //Refreshes the airlines.
     const refreshAirlines = () => {
-        fetch("/api/Airline/All")
+        fetch('/api/Airline/All')
             .then(response => response.json())
             .then(json => setAirlines(json))
             .catch(error => {

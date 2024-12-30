@@ -83,15 +83,14 @@ public class FlightScheduleExampleBuilder
     private void BuildFlights()
     {
         List<Airline> airlines = AirlineDataLayer.GetAllAsync().Result;
+        List<Gate> gates = GateDataLayer.GetAllAsync().Result;
+        List<SortDestination> sortDestinations = SortDestinationDataLayer.GetAllAsync().Result;
 
         int flightNumber = 1000;
-        long gateID = 1;
-        long sortDestinationID = 1;
+        int gateIndex = 0;
+        int sortDestinationIndex = 0;
         TimeSpan departTime = new(4, 0, 0);
         TimeSpan operationalEnd = new(22, 0, 0);
-
-        long gateCount = GateDataLayer.CountAsync().Result;
-        long sortDestinationCount = SortDestinationDataLayer.CountAsync().Result;
 
         while (departTime < operationalEnd)
         {
@@ -104,24 +103,26 @@ public class FlightScheduleExampleBuilder
                     Destination = "ZZZ",
                     DepartTime = departTime,
                     FlightNumber = flightNumber.ToString().PadLeft(4, '0'),
-                    GateID = gateID,
+                    GateID = gates[gateIndex].Integer64ID,
+                    GateName = gates[gateIndex].Name,
                     Name = $"{airline.IATA}{flightNumber.ToString().PadLeft(4, '0')}",
-                    SortDestinationID = sortDestinationID,
+                    SortDestinationID = sortDestinations[sortDestinationIndex].Integer64ID,
+                    SortDestinationName = sortDestinations[sortDestinationIndex].Name,
                 });
 
                 flightNumber++;
-                gateID++;
-                sortDestinationID++;
+                gateIndex++;
+                sortDestinationIndex++;
                 departTime = departTime.Add(TimeSpan.FromMinutes(10));
 
-                if (gateID > gateCount)
+                if (gateIndex > gates.Count - 1)
                 {
-                    gateID = 1;
+                    gateIndex = 0;
                 }
 
-                if (sortDestinationID > sortDestinationCount)
+                if (sortDestinationIndex > sortDestinations.Count - 1)
                 {
-                    sortDestinationID = 1;
+                    sortDestinationIndex = 0;
                 }
             }
         }

@@ -56,7 +56,7 @@ export default function AirlineDeleteConfirmDialog({ airline, refreshAirlines, v
             <Dialog breakpoints={{ '960px': '75vw', '641px': '90vw' }} footer={footer} header="Confirm Deletion" modal style={{ width: '32rem' }} visible={visible} onHide={hide}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {airline && <span>Are you sure you want to delete <b>{airline.name}</b>?</span>}
+                    {airline && <span>Are you sure you want to delete <b>{airline.name}</b>? Flights for this airline will be deleted too.</span>}
                 </div>
             </Dialog>
 

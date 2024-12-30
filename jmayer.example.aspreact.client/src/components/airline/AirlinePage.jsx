@@ -4,10 +4,10 @@ import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
-import AirlineAddEditDialog from './AirlineAddEditDialog.jsx';
-import AirlineDeleteConfirmDialog from './AirlineDeleteConfirmDialog.jsx'
 import { useError } from '../errorDialog/ErrorProvider.jsx';
 import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
+import AirlineAddEditDialog from './AirlineAddEditDialog.jsx';
+import AirlineDeleteConfirmDialog from './AirlineDeleteConfirmDialog.jsx'
 
 //TO DO: I need to figure out if the dataTableSelectedAirline and selection options are needed to edit/delete an airline.
 

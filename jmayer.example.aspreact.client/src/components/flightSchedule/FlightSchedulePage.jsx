@@ -6,6 +6,7 @@ import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
 import { useError } from '../errorDialog/ErrorProvider.jsx';
 import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
+import FlightDeleteConfirmDialog from './FlightDeleteConfirmDialog.jsx'
 
 //TO DO: I need to figure out if the dataTableSelectedFlight and selection options are needed to edit/delete a flight.
 
@@ -117,6 +118,7 @@ export default function FlightSchedulePage() {
                 </DataTable>
             </Card>
 
+            <FlightDeleteConfirmDialog flight={flight} refreshFlights={refreshFlights} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
             <ErrorDialog />
         </>
     );

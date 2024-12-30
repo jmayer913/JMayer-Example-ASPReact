@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx'
+import { useError } from '../errorDialog/ErrorProvider.jsx';
+import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //Used to delete an airline; user must confirm first.
 //@param {object} props The properties accepted by the component.
@@ -10,8 +11,7 @@ import ErrorDialog from '../errorDialog/ErrorDialog.jsx'
 //@param {bool} props.visible Used to control if the dialog is visible or not.
 //@param {function} props.hide Used to hide the dialog.
 export default function AirlineDeleteConfirmDialog({ airline, refreshAirlines, visible, hide }) {
-    const [errorDialogVisible, setErrorDialogVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const { showError } = useError();
 
     //Send a request asking the server to delete a specific airline from the database.
     //This is done only after the user has confirmed the deletion.
@@ -23,24 +23,10 @@ export default function AirlineDeleteConfirmDialog({ airline, refreshAirlines, v
                     refreshAirlines();
                 }
                 else {
-                    openErrorDialog('Failed to delete the airline because of an error on the server.');
+                    showError('Failed to delete the airline because of an error on the server.');
                 }
             })
-            .catch(error => {
-                openErrorDialog('Failed to communicate with the server.');
-            });
-    };
-
-    //Hides the error dialog.
-    const hideErrorDialog = () => {
-        setErrorDialogVisible(false);
-    };
-
-    //Opens the error dialog.
-    //@param {string} error The error to display to the user.
-    const openErrorDialog = (error) => {
-        setErrorMessage(error);
-        setErrorDialogVisible(true);
+            .catch(error => showError('Failed to communicate with the server.'));
     };
 
     //Define the footer for the dialog.
@@ -60,7 +46,7 @@ export default function AirlineDeleteConfirmDialog({ airline, refreshAirlines, v
                 </div>
             </Dialog>
 
-            <ErrorDialog errorMessage={errorMessage} visible={errorDialogVisible} hide={hideErrorDialog} />
+            <ErrorDialog />
         </>
     );
 }

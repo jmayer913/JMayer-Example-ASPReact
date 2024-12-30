@@ -6,6 +6,8 @@ import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
 import AirlineAddEditDialog from './AirlineAddEditDialog.jsx';
 import AirlineDeleteConfirmDialog from './AirlineDeleteConfirmDialog.jsx'
+import { useError } from '../errorDialog/ErrorProvider.jsx';
+import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //TO DO: I need to figure out if the dataTableSelectedAirline and selection options are needed to edit/delete an airline.
 
@@ -26,6 +28,7 @@ export default function AirlinePage() {
     const [addEditDialogVisible, setAddEditDialogVisible] = useState(false);
     const [deleteConfirmDialogVisible, setDeleteConfirmDialogVisible] = useState(false);
     const [newRecord, setNewRecord] = useState(false);
+    const { showError } = useError();
 
     //Load the airlines when the component mounts.
     useEffect(() => {
@@ -68,9 +71,7 @@ export default function AirlinePage() {
         fetch('/api/Airline/All')
             .then(response => response.json())
             .then(json => setAirlines(json))
-            .catch(error => {
-                //TO DO: Add error handling.
-            });
+            .catch(error => showError('Failed to communicate with the server.'));
     };
 
     //Define the add button for the toolbar.
@@ -111,6 +112,7 @@ export default function AirlinePage() {
 
             <AirlineAddEditDialog newRecord={newRecord} airline={airline} setAirline={setAirline} refreshAirlines={refreshAirlines} visible={addEditDialogVisible} hide={hideAddEditDialog} />
             <AirlineDeleteConfirmDialog airline={airline} refreshAirlines={refreshAirlines} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
+            <ErrorDialog />
         </>
     );
 }

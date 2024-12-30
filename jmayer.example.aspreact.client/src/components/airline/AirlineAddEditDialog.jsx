@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { useError } from '../errorDialog/ErrorProvider.jsx';
 import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //Used to add or update an airline.
@@ -17,8 +18,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
     const [icaoValidationError, setIcaoValidationError] = useState('');
     const [nameValidationError, setNameValidationError] = useState('');
     const [numberCodeValidationError, setNumberCodeValidationError] = useState('');
-    const [errorDialogVisible, setErrorDialogVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const { showError } = useError();
 
     //Send a request asking the server to add the new airline to the database.
     const addAirline = () => {
@@ -39,12 +39,10 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
                     response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
                 }
                 else {
-                    openErrorDialog('Failed to create the airline because of an error on the server.');
+                    showError('Failed to create the airline because of an error on the server.');
                 }
             })
-            .catch(error => {
-                openErrorDialog('Failed to communicate with the server.');
-            });
+            .catch(error => showError('Failed to communicate with the server.'));
         }
     };
 
@@ -57,11 +55,6 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         hide();
     };
 
-    //Hides the error dialog.
-    const hideErrorDialog = () => {
-        setErrorDialogVisible(false);
-    };
-
     //Validates all and returns a pass or fail.
     const isValid = () => {
         const iataPass = validateIATA();
@@ -71,13 +64,6 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
 
         return iataPass && icoaPass && namePass && numberCodePass;
     }
-
-    //Opens the error dialog.
-    //@param {string} error The error to display to the user.
-    const openErrorDialog = (error) => {
-        setErrorMessage(error);
-        setErrorDialogVisible(true);
-    };
 
     //Processes the server side validation result and sets any validation errors.
     //@param {object} serverSideValidationResult What the server found wrong with the user input.
@@ -178,15 +164,13 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
                     response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
                 }
                 else if (response.status == 409) {
-                    openErrorDialog('The submitted data was detected to be out of date; please refresh and try again.');
+                    showError('The submitted data was detected to be out of date; please refresh and try again.');
                 }
                 else {
-                    openErrorDialog('Failed to update the airline because of an error on the server.');
+                    showError('Failed to update the airline because of an error on the server.');
                 }
             })
-            .catch(error => {
-                openErrorDialog('Failed to communicate with the server.');
-            });
+            .catch(error => showError('Failed to communicate with the server.'));
         }
     };
 
@@ -291,7 +275,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
                 </div>
             </Dialog>
 
-            <ErrorDialog errorMessage={errorMessage} visible={errorDialogVisible} hide={hideErrorDialog} />
+            <ErrorDialog />
         </>
     );
 }

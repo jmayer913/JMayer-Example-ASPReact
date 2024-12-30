@@ -4,6 +4,8 @@ import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
+import { useError } from '../errorDialog/ErrorProvider.jsx';
+import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //TO DO: I need to figure out if the dataTableSelectedFlight and selection options are needed to edit/delete a flight.
 
@@ -30,6 +32,7 @@ export default function FlightSchedulePage() {
     const [addEditDialogVisible, setAddEditDialogVisible] = useState(false);
     const [deleteConfirmDialogVisible, setDeleteConfirmDialogVisible] = useState(false);
     const [newRecord, setNewRecord] = useState(false);
+    const { showError } = useError();
 
     //Load the flights when the component mounts.
     useEffect(() => {
@@ -74,9 +77,7 @@ export default function FlightSchedulePage() {
         fetch('api/Flight/All')
             .then(response => response.json())
             .then(json => setFlights(json))
-            .catch(error => {
-                //TO DO: Add error handling.
-            });
+            .catch(error => showError('Failed to communicate with the server.'));
     };
 
     //Define the add button for the toolbar.
@@ -115,6 +116,8 @@ export default function FlightSchedulePage() {
                     <Column field="sortDestinationName" header="Baggage Sort Destination" filter sortable />
                 </DataTable>
             </Card>
+
+            <ErrorDialog />
         </>
     );
 }

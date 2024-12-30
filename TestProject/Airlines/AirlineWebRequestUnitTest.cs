@@ -21,6 +21,31 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     private readonly WebApplicationFactory<Program> _factory;
 
     /// <summary>
+    /// The constant for a badly formatted IATA code.
+    /// </summary>
+    private const string BadFormattedIATACode = "ZZZ";
+
+    /// <summary>
+    /// The constant for a badly formatted ICAO code.
+    /// </summary>
+    private const string BadFormattedICAOCode = "ZZZZ";
+
+    /// <summary>
+    /// The constant for a badly formatted number code.
+    /// </summary>
+    private const string BadFormattedNumberCode = "9999";
+
+    /// <summary>
+    /// The constant for a default IATA code.
+    /// </summary>
+    private const string DefaultIATACode = "ZZ";
+
+    /// <summary>
+    /// The constant for a default ICAO code.
+    /// </summary>
+    private const string DefaultICAOCode = "ZZZ";
+
+    /// <summary>
     /// The dependency injection constructor.
     /// </summary>
     /// <param name="factory">The factory for the web application.</param>
@@ -57,6 +82,114 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
         Assert.IsType<Airline>(operationResult.DataObject); //An airline must have been returned.
         Assert.True(new AirlineEqualityComparer(true, true, true).Equals((Airline)operationResult.DataObject, airline), "The data object sent should be the same as the data object returned."); //Original and return must be equal.
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline IATA code is not properly formatted when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyAddAirlineBadIATAFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = BadFormattedIATACode,
+            ICAO = DefaultICAOCode,
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Add Bad IATA Code Test",
+        });
+
+        //The operation must have failed.
+        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+        //No airline was returned.
+        Assert.Null(operationResult.DataObject);
+
+        //A bad request status was returned.
+        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+        //A validation error was returned.
+        Assert.NotNull(operationResult.ServerSideValidationResult);
+        Assert.Single(operationResult.ServerSideValidationResult.Errors);
+
+        //The correct error was returned.
+        Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
+        Assert.Equal(nameof(Airline.IATA), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline ICAO code is not properly formatted when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyAddAirlineBadICAOFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = DefaultIATACode,
+            ICAO = BadFormattedICAOCode,
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Add Bad ICAO Code Test",
+        });
+
+        //The operation must have failed.
+        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+        //No airline was returned.
+        Assert.Null(operationResult.DataObject);
+
+        //A bad request status was returned.
+        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+        //A validation error was returned.
+        Assert.NotNull(operationResult.ServerSideValidationResult);
+        Assert.Single(operationResult.ServerSideValidationResult.Errors);
+
+        //The correct error was returned.
+        Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
+        Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline number code is not properly formatted when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyAddAirlineBadNumberCodeFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = DefaultIATACode,
+            ICAO = DefaultICAOCode,
+            NumberCode = BadFormattedNumberCode,
+            Name = "Add Bad Number Code Test",
+        });
+
+        //The operation must have failed.
+        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+        //No airline was returned.
+        Assert.Null(operationResult.DataObject);
+
+        //A bad request status was returned.
+        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+        //A validation error was returned.
+        Assert.NotNull(operationResult.ServerSideValidationResult);
+        Assert.Single(operationResult.ServerSideValidationResult.Errors);
+
+        //The correct error was returned.
+        Assert.Equal("The number code must be 3 digits.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
+        Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
     }
 
     /// <summary>
@@ -174,7 +307,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             IATA = "ZD",
             ICAO = "ZZD",
             NumberCode = "999",
-            Name = "Add Duplicate Number Code Test Test 1",
+            Name = "Add Duplicate Number Code Test 1",
         });
 
         if (!operationResult.IsSuccessStatusCode)
@@ -385,6 +518,144 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     /// <summary>
+    /// The method verifies the server will return a failure if the airline IATA code is not properly formatted when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyUpdateAirlineBadIATAFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZH",
+            ICAO = "ZZH",
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Update Bad IATA Code Test",
+        });
+
+        if (operationResult.DataObject is Airline airline)
+        {
+            airline.IATA = BadFormattedIATACode;
+            operationResult = await dataLayer.UpdateAsync(airline);
+
+            //The operation must have failed.
+            Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+            //No airline was returned.
+            Assert.Null(operationResult.DataObject);
+
+            //A bad request status was returned.
+            Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+            //A validation error was returned.
+            Assert.NotNull(operationResult.ServerSideValidationResult);
+            Assert.Single(operationResult.ServerSideValidationResult.Errors);
+
+            //The correct error was returned.
+            Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
+            Assert.Equal(nameof(Airline.IATA), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        }
+        else
+        {
+            Assert.Fail("Failed to create the first airline.");
+        }
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline ICAO code is not properly formatted when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyUpdateAirlineBadICAOFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZI",
+            ICAO = "ZZI",
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Update Bad ICAO Code Test",
+        });
+
+        if (operationResult.DataObject is Airline airline)
+        {
+            airline.ICAO = BadFormattedICAOCode;
+            operationResult = await dataLayer.UpdateAsync(airline);
+
+            //The operation must have failed.
+            Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+            //No airline was returned.
+            Assert.Null(operationResult.DataObject);
+
+            //A bad request status was returned.
+            Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+            //A validation error was returned.
+            Assert.NotNull(operationResult.ServerSideValidationResult);
+            Assert.Single(operationResult.ServerSideValidationResult.Errors);
+
+            //The correct error was returned.
+            Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
+            Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        }
+        else
+        {
+            Assert.Fail("Failed to create the first airline.");
+        }
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline number code is not properly formatted when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyUpdateAirlineBadNumberCodeFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZJ",
+            ICAO = "ZZJ",
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Update Bad Number Code Test",
+        });
+
+        if (operationResult.DataObject is Airline airline)
+        {
+            airline.NumberCode = BadFormattedNumberCode;
+            operationResult = await dataLayer.UpdateAsync(airline);
+
+            //The operation must have failed.
+            Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+            //No airline was returned.
+            Assert.Null(operationResult.DataObject);
+
+            //A bad request status was returned.
+            Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+            //A validation error was returned.
+            Assert.NotNull(operationResult.ServerSideValidationResult);
+            Assert.Single(operationResult.ServerSideValidationResult.Errors);
+
+            //The correct error was returned.
+            Assert.Equal("The number code must be 3 digits.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
+            Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        }
+        else
+        {
+            Assert.Fail("Failed to create the first airline.");
+        }
+    }
+
+    /// <summary>
     /// The method verifies the server will return a failure if the airline being updated is old.
     /// </summary>
     /// <returns>A Task object for the async.</returns>
@@ -396,8 +667,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZH",
-            ICAO = "ZZH",
+            IATA = "ZK",
+            ICAO = "ZZK",
             Name = "Old Data Airline Test",
             NumberCode = Airline.ZeroNumberCode,
         });
@@ -425,7 +696,6 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         else
         {
             Assert.Fail("Failed to create the first airline.");
-            return;
         }
     }
 
@@ -441,8 +711,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZI",
-            ICAO = "ZZI",
+            IATA = "ZM",
+            ICAO = "ZZM",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate ICAO Test 1",
         });
@@ -455,15 +725,15 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZJ",
-            ICAO = "ZZJ",
+            IATA = "ZN",
+            ICAO = "ZZN",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate ICAO Test 2",
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
-            airline.ICAO = "ZZI";
+            airline.ICAO = "ZZM";
             operationResult = await dataLayer.UpdateAsync(airline);
 
             //The operation must have failed.
@@ -501,8 +771,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZK",
-            ICAO = "ZZK",
+            IATA = "ZO",
+            ICAO = "ZZO",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate Name Test 1",
         });
@@ -515,8 +785,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZM",
-            ICAO = "ZZM",
+            IATA = "ZP",
+            ICAO = "ZZP",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate Name Test 2",
         });
@@ -561,8 +831,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZN",
-            ICAO = "ZZN",
+            IATA = "ZQ",
+            ICAO = "ZZQ",
             NumberCode = "997",
             Name = "Update Duplicate Number Code Test Test 1",
         });
@@ -575,8 +845,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZO",
-            ICAO = "ZZO",
+            IATA = "ZR",
+            ICAO = "ZZR",
             NumberCode = "998",
             Name = "Update Duplicate Number Code Test 2",
         });

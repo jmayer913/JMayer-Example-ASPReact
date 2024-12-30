@@ -1,5 +1,6 @@
 ﻿using JMayer.Data.Data;
 using System.ComponentModel.DataAnnotations;
+
 namespace JMayer.Example.ASPReact.Server.Airlines;
 
 /// <summary>

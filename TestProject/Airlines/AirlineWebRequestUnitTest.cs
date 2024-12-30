@@ -6,6 +6,8 @@ using System.Net;
 
 namespace TestProject.Airlines;
 
+#warning I need a better way to assign unique IATA and ICAO for each test.
+
 /// <summary>
 /// The class manages tests for airlines using both the http client and server.
 /// </summary>
@@ -518,7 +520,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     /// <summary>
-    /// The method verifies the server will return a failure if the airline IATA code is not properly formatted when adding a new airline.
+    /// The method verifies the server will return a failure if the airline IATA code is not properly formatted when updating an airline.
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
@@ -559,12 +561,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         }
         else
         {
-            Assert.Fail("Failed to create the first airline.");
+            Assert.Fail("Failed to create the airline.");
         }
     }
 
     /// <summary>
-    /// The method verifies the server will return a failure if the airline ICAO code is not properly formatted when adding a new airline.
+    /// The method verifies the server will return a failure if the airline ICAO code is not properly formatted when updating an airline.
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
@@ -605,12 +607,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         }
         else
         {
-            Assert.Fail("Failed to create the first airline.");
+            Assert.Fail("Failed to create the airline.");
         }
     }
 
     /// <summary>
-    /// The method verifies the server will return a failure if the airline number code is not properly formatted when adding a new airline.
+    /// The method verifies the server will return a failure if the airline number code is not properly formatted when updating an airline.
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
@@ -651,7 +653,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         }
         else
         {
-            Assert.Fail("Failed to create the first airline.");
+            Assert.Fail("Failed to create the airline.");
         }
     }
 

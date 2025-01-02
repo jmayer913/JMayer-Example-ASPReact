@@ -211,11 +211,9 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, visi
             error = 'The flight number must be 4 digits or 4 digits and a capital letter.';
         }
 
-        //setFlightNumberValidationError(error);
-        setFlightNumberValidationError('');
+        setFlightNumberValidationError(error);
 
-        //return !error;
-        return true;
+        return !error;
     };
 
     //The function returns if the flight's sort destination field passed validation.

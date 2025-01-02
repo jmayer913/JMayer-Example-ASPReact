@@ -87,7 +87,7 @@ public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
 
         if (await ExistAsync(obj => obj.Integer64ID != dataObject.Integer64ID && obj.AirlineID == dataObject.AirlineID && obj.FlightNumber == dataObject.FlightNumber && obj.Destination == dataObject.Destination, cancellationToken) == true)
         {
-            validationResults.Add(new ValidationResult("The flight already exists in the active schedule.", [nameof(Flight.FlightNumber)]));
+            validationResults.Add(new ValidationResult("The flight already exists in the schedule.", [nameof(Flight.FlightNumber)]));
         }
 
         return validationResults;

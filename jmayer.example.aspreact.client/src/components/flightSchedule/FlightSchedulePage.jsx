@@ -6,7 +6,8 @@ import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
 import { useError } from '../errorDialog/ErrorProvider.jsx';
 import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
-import FlightDeleteConfirmDialog from './FlightDeleteConfirmDialog.jsx'
+import FlightAddEditDialog from './FlightAddEditDialog.jsx';
+import FlightDeleteConfirmDialog from './FlightDeleteConfirmDialog.jsx';
 
 //TO DO: I need to figure out if the dataTableSelectedFlight and selection options are needed to edit/delete a flight.
 
@@ -17,7 +18,7 @@ export default function FlightSchedulePage() {
         airlineID: 0,
         codeShares: [],
         description: '',
-        departTime: '00:00',
+        departTime: new Date(new Date().setHours(0, 0, 0, 0)),
         destination: '',
         flightNumber: '',
         gateID: 0,
@@ -62,7 +63,6 @@ export default function FlightSchedulePage() {
 
         setFlight(flight);
         setAddEditDialogVisible(true);
-        //TO DO: Add add/edit dialog.
     };
 
     //Opens the delete confirmation dialog for the
@@ -70,10 +70,9 @@ export default function FlightSchedulePage() {
     const openDeleteConfirmDialog = (flight) => {
         setFlight(flight);
         setDeleteConfirmDialogVisible(true);
-        //TO DO: Add delete confirm dialog
     };
 
-    //Refreshes the flights.
+    //Refreshes the flights for the data table.
     const refreshFlights = () => {
         fetch('api/Flight/All')
             .then(response => response.json())
@@ -118,6 +117,7 @@ export default function FlightSchedulePage() {
                 </DataTable>
             </Card>
 
+            <FlightAddEditDialog newRecord={newRecord} flight={flight} setFlight={setFlight} refreshFlights={refreshFlights} visible={addEditDialogVisible} hide={hideAddEditDialog} />
             <FlightDeleteConfirmDialog flight={flight} refreshFlights={refreshFlights} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
             <ErrorDialog />
         </>

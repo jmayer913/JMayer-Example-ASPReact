@@ -63,7 +63,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         const numberCodePass = validateNumberCode();
 
         return iataPass && icoaPass && namePass && numberCodePass;
-    }
+    };
 
     //Processes the server side validation result and sets any validation errors.
     //@param {object} serverSideValidationResult What the server found wrong with the user input.
@@ -108,41 +108,46 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
     //Updates the description field with the value entered by the user.
     //@param {string} The new description value.
     const setDescription = (value) => {
-        let tempAirline = { ...airline };
-        tempAirline.description = value;
-        setAirline(tempAirline);
+        setAirline({
+            ...airline,
+            description: value
+        });
     };
 
     //Updates the iata field with the value entered by the user.
     //@param {string} The new iata value.
     const setIATA = (value) => {
-        let tempAirline = { ...airline };
-        tempAirline.iata = value.toUpperCase();
-        setAirline(tempAirline);
+        setAirline({
+            ...airline,
+            iata: value.toUpperCase()
+        });
     };
 
     //Updates the icao field with the value entered by the user.
     //@param {string} The new icao value.
     const setICAO = (value) => {
-        let tempAirline = { ...airline };
-        tempAirline.icao = value.toUpperCase();
-        setAirline(tempAirline);
+        setAirline({
+            ...airline,
+            icao: value.toUpperCase()
+        });
     };
 
     //Updates the name field with the value entered by the user.
     //@param {string} The new name value.
     const setName = (value) => {
-        let tempAirline = { ...airline };
-        tempAirline.name = value;
-        setAirline(tempAirline);
+        setAirline({
+            ...airline,
+            name: value
+        });
     };
 
     //Updates the number code field with the value entered by the user.
     //@param {string} The new number code value.
     const setNumberCode = (value) => {
-        let tempAirline = { ...airline };
-        tempAirline.numberCode = value;
-        setAirline(tempAirline);
+        setAirline({
+            ...airline,
+            numberCode: value
+        });
     };
 
     //Send a request asking the server to update an existing airline in the database.
@@ -189,7 +194,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         setIataValidationError(error);
 
         return !error;
-    }
+    };
 
     //Validates the airline's ICAO and returns a pass or fail.
     const validateICOA = () => {
@@ -206,7 +211,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         setIcaoValidationError(error);
 
         return !error;
-    }
+    };
 
     //Validates the airline's name and returns a pass or fail.
     const validateName = () => {
@@ -219,7 +224,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         setNameValidationError(error);
 
         return !error;
-    }
+    };
 
     //Validates the airline's number code and returns a pass or fail.
     const validateNumberCode = () => {
@@ -236,7 +241,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         setNumberCodeValidationError(error);
 
         return !error;
-    }
+    };
 
     //Define the footer for the dialog.
     const footer = (

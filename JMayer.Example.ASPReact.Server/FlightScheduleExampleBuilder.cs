@@ -98,6 +98,7 @@ public class FlightScheduleExampleBuilder
             {
                 _ = FlightDataLayer.CreateAsync(new Flight()
                 {
+                    AirlineIATACode = airline.IATA,
                     AirlineID = airline.Integer64ID,
                     CreatedOn = DateTime.Now,
                     Destination = "ZZZ",

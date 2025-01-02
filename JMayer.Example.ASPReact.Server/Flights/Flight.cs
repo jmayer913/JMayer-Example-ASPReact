@@ -11,6 +11,11 @@ namespace JMayer.Example.ASPReact.Server.Flights;
 public class Flight : UserEditableDataObject
 {
     /// <summary>
+    /// The property gets/sets the IATA code for the airline for the flight.
+    /// </summary>
+    public string AirlineIATACode { get; set; } = string.Empty;
+
+    /// <summary>
     /// The property gets/sets the id for the airline for the flight.
     /// </summary>
     [Required]
@@ -81,6 +86,7 @@ public class Flight : UserEditableDataObject
 
         if (dataObject is Flight flight)
         {
+            AirlineIATACode = flight.AirlineIATACode;
             AirlineID = flight.AirlineID;
             CodeShares.Clear();
             DepartTime = flight.DepartTime;

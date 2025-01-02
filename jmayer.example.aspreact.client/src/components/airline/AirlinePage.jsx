@@ -66,7 +66,7 @@ export default function AirlinePage() {
         setDeleteConfirmDialogVisible(true);
     };
 
-    //Refreshes the airlines.
+    //Refreshes the airlines for the data table.
     const refreshAirlines = () => {
         fetch('/api/Airline/All')
             .then(response => response.json())

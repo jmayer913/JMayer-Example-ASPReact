@@ -1,52 +1,41 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { useError } from '../errorDialog/ErrorProvider.jsx';
 import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
+import { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
 
-//Used to add or update an airline.
+//The function returns the dialog for adding or updating an airline.
 //@param {object} props The properties accepted by the component.
 //@param {bool} props.newRecord Indicates if the airline object is a new record or not.
 //@param {object} props.airline The airline to add or update.
 //@param {function} props.setAirline Used to update the state of the airline object.
-//@param {function} props.refreshAirlines Used to refresh the airlines in the data table in the parent component.
 //@param {bool} props.visible Used to control if the dialog is visible or not.
 //@param {function} props.hide Used to hide the dialog.
-export default function AirlineAddEditDialog({ newRecord, airline, setAirline, refreshAirlines, visible, hide }) {
+export default function AirlineAddEditDialog({ newRecord, airline, setAirline, visible, hide }) {
     const [iataValidationError, setIataValidationError] = useState('');
     const [icaoValidationError, setIcaoValidationError] = useState('');
     const [nameValidationError, setNameValidationError] = useState('');
     const [numberCodeValidationError, setNumberCodeValidationError] = useState('');
-    const { showError } = useError();
+    const { addAirline, addAirlineServerSideResult, addAirlineSuccess, updateAirline, updateAirlineServerSideResult, updateAirlineSuccess } = useAirlineDataLayer();
 
-    //Send a request asking the server to add the new airline to the database.
-    const addAirline = () => {
-        if (isValid()) {
-            fetch('api/Airline', {
-                method: 'POST',
-                body: JSON.stringify(airline),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeDialog();
-                    refreshAirlines();
-                }
-                else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
-                }
-                else {
-                    showError('Failed to create the airline because of an error on the server.');
-                }
-            })
-            .catch(error => showError('Failed to communicate with the server.'));
+    useEffect(() => {
+        //Hide the dialog on a successful add or update.
+        if (addAirlineSuccess || updateAirlineSuccess) {
+            hide();
         }
-    };
 
-    //Clears the validation and closes the dialog.
+        //Handle displays server side errors.
+        if (addAirlineServerSideResult !== null) {
+            processServerSideValidationResult(addAirlineServerSideResult);
+        }
+        else if (updateAirlineServerSideResult !== null) {
+            processServerSideValidationResult(updateAirlineServerSideResult);
+        }
+
+    }, [addAirlineServerSideResult, addAirlineSuccess, updateAirlineServerSideResult, updateAirlineSuccess])
+
+    //The function clears the validation and closes the dialog.
     const closeDialog = () => {
         setIataValidationError('');
         setIcaoValidationError('');
@@ -55,7 +44,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         hide();
     };
 
-    //Validates all and returns a pass or fail.
+    //The funciton returns if validation passed or failed.
     const isValid = () => {
         const iataPass = validateIATA();
         const icoaPass = validateICOA();
@@ -65,7 +54,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         return iataPass && icoaPass && namePass && numberCodePass;
     };
 
-    //Processes the server side validation result and sets any validation errors.
+    //The function processes the server side validation result and sets any validation errors.
     //@param {object} serverSideValidationResult What the server found wrong with the user input.
     const processServerSideValidationResult = (serverSideValidationResult) => {
         if (Array.isArray(serverSideValidationResult.errors)) {
@@ -105,8 +94,8 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         }
     };
 
-    //Updates the description field with the value entered by the user.
-    //@param {string} The new description value.
+    //The function updates the description field with the value entered by the user.
+    //@param {string} value The new description value.
     const setDescription = (value) => {
         setAirline({
             ...airline,
@@ -114,8 +103,8 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         });
     };
 
-    //Updates the iata field with the value entered by the user.
-    //@param {string} The new iata value.
+    //The function updates the iata field with the value entered by the user.
+    //@param {string} value The new iata value.
     const setIATA = (value) => {
         setAirline({
             ...airline,
@@ -123,8 +112,8 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         });
     };
 
-    //Updates the icao field with the value entered by the user.
-    //@param {string} The new icao value.
+    //The function updates the icao field with the value entered by the user.
+    //@param {string} value The new icao value.
     const setICAO = (value) => {
         setAirline({
             ...airline,
@@ -132,8 +121,8 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         });
     };
 
-    //Updates the name field with the value entered by the user.
-    //@param {string} The new name value.
+    //The function updates the name field with the value entered by the user.
+    //@param {string} value The new name value.
     const setName = (value) => {
         setAirline({
             ...airline,
@@ -141,8 +130,8 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         });
     };
 
-    //Updates the number code field with the value entered by the user.
-    //@param {string} The new number code value.
+    //The function updates the number code field with the value entered by the user.
+    //@param {string} value The new number code value.
     const setNumberCode = (value) => {
         setAirline({
             ...airline,
@@ -150,36 +139,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         });
     };
 
-    //Send a request asking the server to update an existing airline in the database.
-    const updateAirline = () => {
-        if (isValid()) {
-            fetch('api/Airline', {
-                method: 'PUT',
-                body: JSON.stringify(airline),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeDialog();
-                    refreshAirlines();
-                }
-                else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
-                }
-                else if (response.status == 409) {
-                    showError('The submitted data was detected to be out of date; please refresh and try again.');
-                }
-                else {
-                    showError('Failed to update the airline because of an error on the server.');
-                }
-            })
-            .catch(error => showError('Failed to communicate with the server.'));
-        }
-    };
-
-    //Validates the airline's IATA and returns a pass or fail.
+    //The function returns if the airline's IATA field passed validation.
     const validateIATA = () => {
         const iataPattern = /^[A-Z0-9]{2}$/;
         let error = '';
@@ -196,7 +156,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         return !error;
     };
 
-    //Validates the airline's ICAO and returns a pass or fail.
+    //The function returns if the airline's ICAO field passed validation.
     const validateICOA = () => {
         const icoaPattern = /^[A-Z]{3}$/;
         let error = '';
@@ -213,7 +173,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         return !error;
     };
 
-    //Validates the airline's name and returns a pass or fail.
+    //The function returns if the airline's name field passed validation.
     const validateName = () => {
         let error = '';
 
@@ -226,7 +186,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         return !error;
     };
 
-    //Validates the airline's number code and returns a pass or fail.
+    //The function returns if the airline's number code field passed validation.
     const validateNumberCode = () => {
         const numberCodePattern = /^[0-9]{3}$/;
         let error = '';
@@ -243,11 +203,11 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, r
         return !error;
     };
 
-    //Define the footer for the dialog.
+    //The footer for the dialog.
     const footer = (
         <React.Fragment>
             <Button label="Cancel" icon="pi pi-times" outlined onClick={closeDialog} />
-            <Button label="Save" icon="pi pi-check" onClick={() => newRecord ? addAirline() : updateAirline()} />
+            <Button label="Save" icon="pi pi-check" onClick={() => isValid() && (newRecord ? addAirline(airline) : updateAirline(airline))} />
         </React.Fragment>
     );
 

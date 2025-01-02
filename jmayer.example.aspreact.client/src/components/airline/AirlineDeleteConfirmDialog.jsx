@@ -1,39 +1,29 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { useError } from '../errorDialog/ErrorProvider.jsx';
 import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
+import { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
 
-//Used to delete an airline; user must confirm first.
+//The function returns the dialog for deleting an airline.
 //@param {object} props The properties accepted by the component.
 //@param {object} props.airline The airline to be deleted on user confirmation.
-//@param {function} props.refreshAirlines Used to refresh the airlines in the data table in the parent component.
 //@param {bool} props.visible Used to control if the dialog is visible or not.
 //@param {function} props.hide Used to hide the dialog.
-export default function AirlineDeleteConfirmDialog({ airline, refreshAirlines, visible, hide }) {
-    const { showError } = useError();
+export default function AirlineDeleteConfirmDialog({ airline, visible, hide }) {
+    const { deleteAirline, deleteAirlineSuccess } = useAirlineDataLayer();
 
-    //Send a request asking the server to delete a specific airline from the database.
-    //This is done only after the user has confirmed the deletion.
-    const deleteAirline = () => {
-        fetch('/api/Airline/' + airline.integer64ID, { method: 'DELETE' })
-            .then(response => {
-                if (response.ok) {
-                    hide();
-                    refreshAirlines();
-                }
-                else {
-                    showError('Failed to delete the airline because of an error on the server.');
-                }
-            })
-            .catch(error => showError('Failed to communicate with the server.'));
-    };
+    useEffect(() => {
+        //Hide the dialog on a successful delete.
+        if (deleteAirlineSuccess) {
+            hide();
+        }
+    }, [deleteAirlineSuccess]);
 
-    //Define the footer for the dialog.
+    //The footer for the dialog.
     const footer = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hide} />
-            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteAirline} />
+            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => deleteAirline(airline)} />
         </React.Fragment>
     );
 

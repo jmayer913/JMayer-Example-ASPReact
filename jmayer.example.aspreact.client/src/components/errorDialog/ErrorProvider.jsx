@@ -30,7 +30,7 @@ export const ErrorProvider = ({ children }) => {
     );
 };
 
-//Used by components to access the error context.
+//A hook used by the components to interact with the error context.
 export const useError = () => {
     return useContext(ErrorContext);
 }

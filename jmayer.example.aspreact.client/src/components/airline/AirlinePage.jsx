@@ -66,7 +66,7 @@ export default function AirlinePage() {
         );
     };
 
-    //The delete/edit actions for the action column of the data table.
+    //The content for the action column of the data table.
     const actionBodyTemple = (rowData) => {
         return (
             <React.Fragment>

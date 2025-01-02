@@ -5,6 +5,8 @@ using JMayer.Example.ASPReact.Server.SortDestinations;
 
 namespace JMayer.Example.ASPReact.Server;
 
+#warning I need to generate different airport codes for the destination instead of all flight go to ZZZ.
+
 /// <summary>
 /// The class is used to generate example data for a flight schedule.
 /// </summary>

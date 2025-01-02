@@ -4,25 +4,27 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import { useError } from '../errorDialog/ErrorProvider.jsx';
+import { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
+import { useFlightDataLayer } from '../../datalayers/FlightDataLayer.jsx';
+import { useGateDataLayer } from '../../datalayers/GateDataLayer.jsx';
+import { useSortDestinationDataLayer } from '../../datalayers/SortDestinationDataLayer.jsx';
 
 //Used to add or update a flight.
 //@param {object} props The properties accepted by the component.
 //@param {bool} props.newRecord Indicates if the flight object is a new record or not.
 //@param {object} props.flight The flight to add or update.
-//@param {function} props.refreshFlights Used to refresh the flights in the data table in the parent component.
 //@param {bool} props.visible Used to control if the dialog is visible or not.
 //@param {function} props.hide Used to hide the dialog.
-export default function FlightAddEditDialog({ newRecord, flight, setFlight, refreshFlights, visible, hide }) {
-    const [airlines, setAirlines] = useState([]);
-    const [gates, setGates] = useState([]);
-    const [sortDestinations, setSortDestinations] = useState([]);
+export default function FlightAddEditDialog({ newRecord, flight, setFlight, visible, hide }) {
+    const { airlines, getAirlines } = useAirlineDataLayer();
+    const { addFlight, addFlightServerSideResult, addFlightSuccess, updateFlight, updateFlightServerSideResult, updateFlightSuccess } = useFlightDataLayer();
+    const { gates, getGates } = useGateDataLayer();
+    const { sortDestinations, getSortDestinations } = useSortDestinationDataLayer();
     const [airlineValidationError, setAirlineValidationError] = useState('');
     const [gateValidationError, setGateValidationError] = useState('');
     const [destinationValidationError, setDestinationValidationError] = useState('');
     const [flightNumberValidationError, setFlightNumberValidationError] = useState('');
     const [sortDestinationValidationError, setSortDestinationValidationError] = useState('');
-    const { showError } = useError();
 
     //When editing a flight, the server will return only the time which
     //javascript will represent as a string so the time string will need 
@@ -32,45 +34,34 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         setFlight({
             ...flight,
             departTime: new Date(Date.parse(new Date().toLocaleDateString('en-US', options) + " " + flight.departTime))
-        })
+        });
     }
 
     //Load the airlines, gates & sort destinations when the component mounts.
     useEffect(() => {
-        refreshAirlines();
-        refreshGates();
-        refreshSortDestinations();
+        getAirlines();
+        getGates();
+        getSortDestinations();
     }, []);
 
-    //Send a request asking the server to add the new flight to the database.
-    const addFlight = () => {
-        if (isValid()) {
-            let tempFlight = prepFlightObject();
-
-            fetch('api/Flight', {
-                method: 'POST',
-                body: JSON.stringify(tempFlight),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-                .then(response => {
-                    if (response.ok) {
-                        closeDialog();
-                        refreshFlights();
-                    }
-                    else if (response.status == 400) {
-                        response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
-                    }
-                    else {
-                        showError('Failed to create the flight because of an error on the server.');
-                    }
-                })
-                .catch(error => showError('Failed to communicate with the server.'));
+    //Handle state changes based on add/update operations.
+    useEffect(() => {
+        //Hide the dialog on a successful add or update.
+        if (addFlightSuccess || updateFlightSuccess) {
+            hide();
         }
-    };
 
-    //Clears the validation and closes the dialog.
+        //Handle displays server side errors.
+        if (addFlightServerSideResult !== null) {
+            processServerSideValidationResult(addFlightServerSideResult);
+        }
+        else if (updateFlightServerSideResult !== null) {
+            processServerSideValidationResult(updateFlightServerSideResult);
+        }
+
+    }, [addFlightServerSideResult, addFlightSuccess, updateFlightServerSideResult, updateFlightSuccess]);
+
+    //The function clears the validation and closes the dialog.
     const closeDialog = () => {
         setAirlineValidationError('');
         setDestinationValidationError('');
@@ -80,23 +71,18 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         hide();
     };
 
-    //Validates all and returns a pass or fail.
+    //The funciton returns if validation passed or failed.
     const isValid = () => {
-        const airlinePass = newRecord && validateAirline();
+        const airlinePass = validateAirline();
         const destinationPass = validateDestination();
         const gatePass = validateGate();
-        const flightNumberPass = newRecord && validateFlightNumber();
+        const flightNumberPass = validateFlightNumber();
         const sortDestinaitonPass = validateSortDestination();
 
-        if (newRecord) {
-            return airlinePass && destinationPass && gatePass && flightNumberPass && sortDestinaitonPass;
-        }
-        else {
-            return destinationPass && gatePass && sortDestinaitonPass;
-        }
+        return airlinePass && destinationPass && gatePass && flightNumberPass && sortDestinaitonPass;
     };
 
-    //Processes the server side validation result and sets any validation errors.
+    //The function processes the server side validation result and sets any validation errors.
     //@param {object} serverSideValidationResult What the server found wrong with the user input.
     const processServerSideValidationResult = (serverSideValidationResult) => {
         if (Array.isArray(serverSideValidationResult.errors)) {
@@ -122,41 +108,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         }
     };
 
-    //Does data modification before sending the flight object to the server.
-    const prepFlightObject = () => {
-        const options = { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        return {
-            ...flight,
-            //Only send the time to the server because the property on the server side is a C# TimeSpan.
-            departTime: flight.departTime.toLocaleTimeString('en-US', options)
-        };
-    };
-
-    //Refreshes the airlines for the dropdown.
-    const refreshAirlines = () => {
-        fetch('api/Airline/All')
-            .then(response => response.json())
-            .then(json => setAirlines(json))
-            .catch(error => showError('Failed to communicate with the server.'));
-    };
-
-    //Refreshes the gates for the dropdown.
-    const refreshGates = () => {
-        fetch('api/Gate/All')
-            .then(response => response.json())
-            .then(json => setGates(json))
-            .catch(error => showError('Failed to communicate with the server.'));
-    };
-
-    //Refreshes the sort destinations for the dropdown.
-    const refreshSortDestinations = () => {
-        fetch('api/SortDestination/All')
-            .then(response => response.json())
-            .then(json => setSortDestinations(json))
-            .catch(error => showError('Failed to communicate with the server.'));
-    };
-
-    //Updates the airline field with the value selected by the user.
+    //The function updates the airline field with the value selected by the user.
     //@param {object} airline The airline the user selected.
     const setAirline = (airline) => {
         setFlight({
@@ -167,7 +119,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         });
     };
 
-    //Updates the depart time field with the value entered by the user.
+    //The function updates the depart time field with the value entered by the user.
     //@param {date} departTime The depart time the user entered.
     const setDepartTime = (departTime) => {
         setFlight({
@@ -176,7 +128,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         });
     };
 
-    //Updates the destination field with the value entered by the user.
+    //The function updates the destination field with the value entered by the user.
     //@param {string} destination The destination the user entered.
     const setDestination = (destination) => {
         setFlight({
@@ -185,7 +137,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         });
     };
 
-    //Updates the flight number field with the value entered by the user.
+    //The function updates the flight number field with the value entered by the user.
     //@param {string} flightNumber The flight number the user entered.
     const setFlightNumber = (flightNumber) => {
         setFlight({
@@ -195,7 +147,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         });
     };
 
-    //Updates the gate field with the value selected by the user.
+    //The function updates the gate field with the value selected by the user.
     //@param {object} gate The flight number the user selected.
     const setGate = (gate) => {
         setFlight({
@@ -205,8 +157,8 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         });
     };
 
-    //Updates the sort destination field with the value selected by the user.
-    //@param {sortDestination} gate The sort desstination the user selected.
+    //The function updates the sort destination field with the value selected by the user.
+    //@param {sortDestination} sortDestination The sort desstination the user selected.
     const setSortDestination = (sortDestination) => {
         setFlight({
             ...flight,
@@ -215,38 +167,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         });
     };
 
-    //Send a request asking the server to update an existing flight in the database.
-    const updateFlight = () => {
-        if (isValid()) {
-            let tempFlight = prepFlightObject();
-
-            fetch('api/Flight', {
-                method: 'PUT',
-                body: JSON.stringify(tempFlight),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-                .then(response => {
-                    if (response.ok) {
-                        closeDialog();
-                        refreshFlights();
-                    }
-                    else if (response.status == 400) {
-                        response.json().then(serverSideValidationResult => processServerSideValidationResult(serverSideValidationResult));
-                    }
-                    else if (response.status == 409) {
-                        showError('The submitted data was detected to be out of date; please refresh and try again.');
-                    }
-                    else {
-                        showError('Failed to update the flight because of an error on the server.');
-                    }
-                })
-                .catch(error => showError('Failed to communicate with the server.'));
-        }
-    };
-
-    //Validates the flight's airline and returns a pass or fail.
+    //The function returns if the flight's airline field passed validation.
     const validateAirline = () => {
         let error = '';
 
@@ -259,7 +180,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         return !error;
     };
 
-    //Validates the flight's destination and returns a pass or fail.
+    //The function returns if the flight's destination field passed validation.
     const validateDestination = () => {
         const pattern = /^[A-Z]{3}$/;
         let error = '';
@@ -276,7 +197,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         return !error;
     };
 
-    //Validates the flight's gate and returns a pass or fail.
+    //The function returns if the flight's gate field passed validation.
     const validateGate = () => {
         let error = '';
 
@@ -289,7 +210,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         return !error;
     };
 
-    //Validates the flight's number and returns a pass or fail.
+    //The function returns if the flight's number field passed validation.
     const validateFlightNumber = () => {
         const pattern = /^([0-9]{4}|([0-9]{4}[A-Z]{1}))$/;
         let error = '';
@@ -306,7 +227,7 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         return !error;
     };
 
-    //Validates the flight's sort destination and returns a pass or fail.
+    //The function returns if the flight's sort destination field passed validation.
     const validateSortDestination = () => {
         let error = '';
 
@@ -319,11 +240,11 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
         return !error;
     };
 
-    //Define the footer for the dialog.
+    //The footer for the dialog.
     const footer = (
         <React.Fragment>
             <Button label="Cancel" icon="pi pi-times" outlined onClick={closeDialog} />
-            <Button label="Save" icon="pi pi-check" onClick={() => newRecord ? addFlight() : updateFlight()} />
+            <Button label="Save" icon="pi pi-check" onClick={() => isValid() && (newRecord ? addFlight(flight) : updateFlight(flight))} />
         </React.Fragment>
     );
 

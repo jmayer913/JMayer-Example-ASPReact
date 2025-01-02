@@ -18,7 +18,7 @@ export default function AirlineDeleteConfirmDialog({ airline, visible, hide }) {
         }
     }, [deleteAirlineSuccess]);
 
-    //The footer for the dialog.
+    //The footer content for the dialog.
     const footer = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hide} />

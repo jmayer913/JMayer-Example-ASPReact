@@ -4,56 +4,42 @@ import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
-import { useError } from '../errorDialog/ErrorProvider.jsx';
 import FlightAddEditDialog from './FlightAddEditDialog.jsx';
 import FlightDeleteConfirmDialog from './FlightDeleteConfirmDialog.jsx';
+import initialFlight, { useFlightDataLayer } from '../../datalayers/FlightDataLayer.jsx';
 
 //TO DO: I need to figure out if the dataTableSelectedFlight and selection options are needed to edit/delete a flight.
 
-//The flight schedule page. Users can manage active flights for today.
+//The function returns the page for the flight schedule (flight for today).
 export default function FlightSchedulePage() {
-    //Used when adding a new flight.
-    let emptyFlight = {
-        airlineID: 0,
-        codeShares: [],
-        description: '',
-        departTime: new Date(new Date().setHours(0, 0, 0, 0)),
-        destination: '',
-        flightNumber: '',
-        gateID: 0,
-        gateName: '',
-        name: '',
-        sortDestinationID: 0,
-        sortDestinationName: '',
-    };
-
-    const [flights, setFlights] = useState([]);
-    const [flight, setFlight] = useState(emptyFlight);
+    const { flights, getFlights } = useFlightDataLayer();
+    const [flight, setFlight] = useState(initialFlight);
     const [dataTableSelectedFlight, setDataTableSelectedFlight] = useState(null);
     const [addEditDialogVisible, setAddEditDialogVisible] = useState(false);
     const [deleteConfirmDialogVisible, setDeleteConfirmDialogVisible] = useState(false);
     const [newRecord, setNewRecord] = useState(false);
-    const { showError } = useError();
 
     //Load the flights when the component mounts.
     useEffect(() => {
-        refreshFlights();
+        getFlights();
     }, []);
 
-    //Hide the add/edit dialog.
+    //The function hides the add/edit dialog.
     const hideAddEditDialog = () => {
         setAddEditDialogVisible(false);
+        getFlights();
     };
 
-    //Hide the delete confirmation dialog.
+    //The function hides the delete confirmation dialog.
     const hideDeleteConfirmDialog = () => {
         setDeleteConfirmDialogVisible(false);
+        getFlights();
     };
 
-    //Opens the add/edit dialog.
+    //The function opens the add/edit dialog.
     const openAddEditDialog = (flight) => {
         if (flight === null) {
-            flight = { ...emptyFlight }
+            flight = { ...initialFlight }
             setNewRecord(true);
         }
         else {
@@ -64,22 +50,14 @@ export default function FlightSchedulePage() {
         setAddEditDialogVisible(true);
     };
 
-    //Opens the delete confirmation dialog for the
+    //The function opens the delete confirmation dialog for the
     //user to confirm or cancel the deletion.
     const openDeleteConfirmDialog = (flight) => {
         setFlight(flight);
         setDeleteConfirmDialogVisible(true);
     };
 
-    //Refreshes the flights for the data table.
-    const refreshFlights = () => {
-        fetch('api/Flight/All')
-            .then(response => response.json())
-            .then(json => setFlights(json))
-            .catch(error => showError('Failed to communicate with the server.'));
-    };
-
-    //Define the add button for the toolbar.
+    //The content of the toolbar.
     const leftToolbarTemplate = () => {
         return (
             <div className="flex flex-wrap gap-2">
@@ -88,7 +66,7 @@ export default function FlightSchedulePage() {
         );
     };
 
-    //Define the delete/edit actions for the action column.
+    //The content for the action column of the data table.
     const actionBodyTemple = (rowData) => {
         return (
             <React.Fragment>
@@ -116,8 +94,8 @@ export default function FlightSchedulePage() {
                 </DataTable>
             </Card>
 
-            <FlightAddEditDialog newRecord={newRecord} flight={flight} setFlight={setFlight} refreshFlights={refreshFlights} visible={addEditDialogVisible} hide={hideAddEditDialog} />
-            <FlightDeleteConfirmDialog flight={flight} refreshFlights={refreshFlights} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
+            <FlightAddEditDialog newRecord={newRecord} flight={flight} setFlight={setFlight} visible={addEditDialogVisible} hide={hideAddEditDialog} />
+            <FlightDeleteConfirmDialog flight={flight} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
         </>
     );
 }

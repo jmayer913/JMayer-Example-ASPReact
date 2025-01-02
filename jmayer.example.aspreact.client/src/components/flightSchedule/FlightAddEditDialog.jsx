@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -9,7 +9,7 @@ import { useFlightDataLayer } from '../../datalayers/FlightDataLayer.jsx';
 import { useGateDataLayer } from '../../datalayers/GateDataLayer.jsx';
 import { useSortDestinationDataLayer } from '../../datalayers/SortDestinationDataLayer.jsx';
 
-//Used to add or update a flight.
+//The function returns the dialog for adding or updating a flight.
 //@param {object} props The properties accepted by the component.
 //@param {bool} props.newRecord Indicates if the flight object is a new record or not.
 //@param {object} props.flight The flight to add or update.

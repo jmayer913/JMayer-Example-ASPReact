@@ -1,7 +1,7 @@
 import { PanelMenu } from 'primereact/panelmenu';
 import { Sidebar } from 'primereact/sidebar';
 
-//The sidebar menu of the website.
+//The function returns the sidebar menu of the website.
 //@param {object} props The properties accepted by the component.
 //@param {bool} props.visible Used to control if the sidebar menu is visibile or not.
 //@param {function} props.hide Used by the component to hide the sidebar menu.

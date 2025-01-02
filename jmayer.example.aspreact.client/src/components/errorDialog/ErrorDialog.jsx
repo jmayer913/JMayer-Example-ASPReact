@@ -3,11 +3,11 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { useError } from './ErrorProvider';
 
-//Displays an error message to the user.
+//The function returns the dialog for error messages.
 export default function ErrorDialog() {
     const { errorMessage, errorVisible, hideError } = useError();
 
-    //Define the footer for the dialog.
+    //The footer content for the dialog.
     const footer = (
         <React.Fragment>
             <Button label="Ok" outlined onClick={hideError} />

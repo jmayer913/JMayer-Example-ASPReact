@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useError } from '../components/errorDialog/ErrorProvider.jsx';
+import { shapeValidationResult } from './DataLayerHelper.jsx';
 
 //Defines the initial flight object.
 const initialFlight = {
@@ -46,7 +47,7 @@ export function useFlightDataLayer() {
                     setAddFlightSuccess(true);
                 }
                 else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => setAddFlightServerSideResult(serverSideValidationResult));
+                    response.json().then(serverSideValidationResult => setAddFlightServerSideResult(shapeValidationResult(serverSideValidationResult)));
                 }
                 else {
                     showError('Failed to create the flight because of an error on the server.');
@@ -120,7 +121,7 @@ export function useFlightDataLayer() {
                     setUpdateFlightSuccess(true);
                 }
                 else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => setUpdateFlightServerSideResult(serverSideValidationResult));
+                    response.json().then(serverSideValidationResult => setUpdateFlightServerSideResult(shapeValidationResult(serverSideValidationResult)));
                 }
                 else if (response.status == 409) {
                     showError('The submitted data was detected to be out of date; please refresh and try again.');

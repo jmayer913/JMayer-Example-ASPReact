@@ -85,25 +85,14 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, visi
     //The function processes the server side validation result and sets any validation errors.
     //@param {object} serverSideValidationResult What the server found wrong with the user input.
     const processServerSideValidationResult = (serverSideValidationResult) => {
-        if (Array.isArray(serverSideValidationResult.errors)) {
-            for (const error of serverSideValidationResult.errors) {
-                switch (error.propertyName) {
-                    case 'Destination':
-                        setDestinationValidationError(error.errorMessage);
-                        break;
-                    case 'FlightNumber':
-                        setFlightNumberValidationError(error.errorMessage);
-                        break;
-                }
-            }
-        }
-        else {
-            if (serverSideValidationResult.errors['Destination'] !== undefined) {
-                setDestinationValidationError(serverSideValidationResult.errors['Destination'][0]);
-            }
-
-            if (serverSideValidationResult.errors['FlightNumber'] !== undefined) {
-                setFlightNumberValidationError(serverSideValidationResult.errors['FlightNumber'][0]);
+        for (const error of serverSideValidationResult.errors) {
+            switch (error.propertyName) {
+                case 'Destination':
+                    setDestinationValidationError(error.errorMessage);
+                    break;
+                case 'FlightNumber':
+                    setFlightNumberValidationError(error.errorMessage);
+                    break;
             }
         }
     };
@@ -222,9 +211,11 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, visi
             error = 'The flight number must be 4 digits or 4 digits and a capital letter.';
         }
 
-        setFlightNumberValidationError(error);
+        //setFlightNumberValidationError(error);
+        setFlightNumberValidationError('');
 
-        return !error;
+        //return !error;
+        return true;
     };
 
     //The function returns if the flight's sort destination field passed validation.

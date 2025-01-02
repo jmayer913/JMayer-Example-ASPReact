@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useError } from '../components/errorDialog/ErrorProvider.jsx';
+import { shapeValidationResult } from './DataLayerHelper.jsx';
 
 //I don't know if I should have a hook per API call or a single hook with all the API calls.
 
@@ -40,7 +41,7 @@ export function useAirlineDataLayer() {
                     setAddAirlineSuccess(true);
                 }
                 else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => setAddAirlineServerSideResult(serverSideValidationResult));
+                    response.json().then(serverSideValidationResult => setAddAirlineServerSideResult(shapeValidationResult(serverSideValidationResult)));
                 }
                 else {
                     showError('Failed to create the airline because of an error on the server.');
@@ -102,7 +103,7 @@ export function useAirlineDataLayer() {
                     setUpdateAirlineSuccess(true);
                 }
                 else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => setUpdateAirlineServerSideResult(serverSideValidationResult));
+                    response.json().then(serverSideValidationResult => setUpdateAirlineServerSideResult(shapeValidationResult(serverSideValidationResult)));
                 }
                 else if (response.status == 409) {
                     showError('The submitted data was detected to be out of date; please refresh and try again.');

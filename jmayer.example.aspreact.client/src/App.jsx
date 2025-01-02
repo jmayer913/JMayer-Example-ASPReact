@@ -6,21 +6,22 @@ import HomePage from './components/home/HomePage.jsx';
 import Header from './components/layout/Header.jsx';
 import Menu from './components/layout/Menu.jsx';
 import NotFoundPage from './components/NotFound/NotFoundPage.jsx';
+import ErrorDialog from './components/errorDialog/ErrorDialog.jsx';
 import 'primereact/resources/themes/lara-dark-indigo/theme.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import './App.css';
 
-//The main layout of the website & the current page.
+//The function returns the main layout of the website & the current page.
 function App() {
     const [menuVisible, setMenuVisible] = useState(false);
 
-    //Hides the menu.
+    //The function hides the menu.
     const hideMenu = () => {
         setMenuVisible(false);
     };
 
-    //Opens the menu.
+    //The function opens the menu.
     const openMenu = () => {
         setMenuVisible(true);
     };
@@ -37,6 +38,8 @@ function App() {
                     <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </BrowserRouter>
+
+            <ErrorDialog />
         </>
     );
 }

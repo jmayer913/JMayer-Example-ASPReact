@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 import { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
 
 //The function returns the dialog for adding or updating an airline.
@@ -33,7 +32,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
             processServerSideValidationResult(updateAirlineServerSideResult);
         }
 
-    }, [addAirlineServerSideResult, addAirlineSuccess, updateAirlineServerSideResult, updateAirlineSuccess])
+    }, [addAirlineServerSideResult, addAirlineSuccess, updateAirlineServerSideResult, updateAirlineSuccess]);
 
     //The function clears the validation and closes the dialog.
     const closeDialog = () => {
@@ -141,13 +140,13 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
 
     //The function returns if the airline's IATA field passed validation.
     const validateIATA = () => {
-        const iataPattern = /^[A-Z0-9]{2}$/;
+        const pattern = /^[A-Z0-9]{2}$/;
         let error = '';
 
         if (!airline.iata) {
             error = 'The IATA is required.';
         }
-        else if (!iataPattern.test(airline.iata)) {
+        else if (!pattern.test(airline.iata)) {
             error = 'The IATA must be 2 alphanumeric characters.';
         }
 
@@ -158,13 +157,13 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
 
     //The function returns if the airline's ICAO field passed validation.
     const validateICOA = () => {
-        const icoaPattern = /^[A-Z]{3}$/;
+        const pattern = /^[A-Z]{3}$/;
         let error = '';
 
         if (!airline.icao) {
             error = 'The ICAO is required.';
         }
-        else if (!icoaPattern.test(airline.icao)) {
+        else if (!pattern.test(airline.icao)) {
             error = 'The ICAO must be 3 letters.';
         }
 
@@ -188,13 +187,13 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
 
     //The function returns if the airline's number code field passed validation.
     const validateNumberCode = () => {
-        const numberCodePattern = /^[0-9]{3}$/;
+        const pattern = /^[0-9]{3}$/;
         let error = '';
 
         if (!airline.numberCode) {
             error = 'The number code is required.';
         }
-        else if (!numberCodePattern.test(airline.numberCode)) {
+        else if (!pattern.test(airline.numberCode)) {
             error = 'The number code must be 3 digits.';
         }
 
@@ -239,8 +238,6 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
                     {numberCodeValidationError && <small className="p-error">{numberCodeValidationError}</small>}
                 </div>
             </Dialog>
-
-            <ErrorDialog />
         </>
     );
 }

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 import { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
 
 //The function returns the dialog for deleting an airline.
@@ -35,8 +34,6 @@ export default function AirlineDeleteConfirmDialog({ airline, visible, hide }) {
                     {airline && <span>Are you sure you want to delete <b>{airline.name}</b>? Flights for this airline will be deleted too.</span>}
                 </div>
             </Dialog>
-
-            <ErrorDialog />
         </>
     );
 }

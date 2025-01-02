@@ -4,7 +4,6 @@ import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 import AirlineAddEditDialog from './AirlineAddEditDialog.jsx';
 import AirlineDeleteConfirmDialog from './AirlineDeleteConfirmDialog.jsx';
 import initialAirline, { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
@@ -96,7 +95,6 @@ export default function AirlinePage() {
 
             <AirlineAddEditDialog newRecord={newRecord} airline={airline} setAirline={setAirline} visible={addEditDialogVisible} hide={hideAddEditDialog} />
             <AirlineDeleteConfirmDialog airline={airline} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
-            <ErrorDialog />
         </>
     );
 }

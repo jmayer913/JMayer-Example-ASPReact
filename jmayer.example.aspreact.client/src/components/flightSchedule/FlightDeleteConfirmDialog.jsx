@@ -2,7 +2,6 @@ import React from 'react'
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { useError } from '../errorDialog/ErrorProvider.jsx';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //Used to delete a flight; user must confirm first.
 //@param {object} props The properties accepted by the component.
@@ -45,8 +44,6 @@ export default function FlightDeleteConfirmDialog({ flight, refreshFlights, visi
                     {flight && <span>Are you sure you want to delete <b>{flight.name}</b>?</span>}
                 </div>
             </Dialog>
-
-            <ErrorDialog />
         </>
     );
 }

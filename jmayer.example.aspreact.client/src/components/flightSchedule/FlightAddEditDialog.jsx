@@ -5,7 +5,6 @@ import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { useError } from '../errorDialog/ErrorProvider.jsx';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 
 //Used to add or update a flight.
 //@param {object} props The properties accepted by the component.
@@ -361,8 +360,6 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, refr
                     {sortDestinationValidationError && <small className="p-error">{sortDestinationValidationError}</small>}
                 </div>
             </Dialog>
-
-            <ErrorDialog />
         </>
     );
 }

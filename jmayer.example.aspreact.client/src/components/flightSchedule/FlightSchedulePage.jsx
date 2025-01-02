@@ -5,7 +5,6 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Toolbar } from 'primereact/toolbar';
 import { useError } from '../errorDialog/ErrorProvider.jsx';
-import ErrorDialog from '../errorDialog/ErrorDialog.jsx';
 import FlightAddEditDialog from './FlightAddEditDialog.jsx';
 import FlightDeleteConfirmDialog from './FlightDeleteConfirmDialog.jsx';
 
@@ -119,7 +118,6 @@ export default function FlightSchedulePage() {
 
             <FlightAddEditDialog newRecord={newRecord} flight={flight} setFlight={setFlight} refreshFlights={refreshFlights} visible={addEditDialogVisible} hide={hideAddEditDialog} />
             <FlightDeleteConfirmDialog flight={flight} refreshFlights={refreshFlights} visible={deleteConfirmDialogVisible} hide={hideDeleteConfirmDialog} />
-            <ErrorDialog />
         </>
     );
 }

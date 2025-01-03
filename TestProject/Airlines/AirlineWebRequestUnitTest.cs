@@ -6,8 +6,6 @@ using System.Net;
 
 namespace TestProject.Airlines;
 
-#warning I need a better way to assign unique IATA and ICAO for each test.
-
 /// <summary>
 /// The class manages tests for airlines using both the http client and server.
 /// </summary>

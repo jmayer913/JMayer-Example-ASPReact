@@ -5,13 +5,16 @@ using JMayer.Example.ASPReact.Server.SortDestinations;
 
 namespace JMayer.Example.ASPReact.Server;
 
-#warning I need to generate different airport codes for the destination instead of all flight go to ZZZ.
-
 /// <summary>
 /// The class is used to generate example data for a flight schedule.
 /// </summary>
 public class FlightScheduleExampleBuilder
 {
+    /// <summary>
+    /// A list of airport codes.
+    /// </summary>
+    private readonly List<string> _airportCodes = [];
+
     /// <summary>
     /// The property gets/sets the data layer used to interact with airlines.
     /// </summary>
@@ -38,6 +41,7 @@ public class FlightScheduleExampleBuilder
     public FlightScheduleExampleBuilder()
     {
         FlightDataLayer = new FlightDataLayer(AirlineDataLayer, GateDataLayer, SortDestinationDataLayer);
+        GenerateAirportCodes();
     }
 
     /// <summary>
@@ -103,7 +107,7 @@ public class FlightScheduleExampleBuilder
                     AirlineIATACode = airline.IATA,
                     AirlineID = airline.Integer64ID,
                     CreatedOn = DateTime.Now,
-                    Destination = "ZZZ",
+                    Destination = _airportCodes[new Random(DateTime.Now.Millisecond).Next(0, _airportCodes.Count - 1)],
                     DepartTime = departTime,
                     FlightNumber = flightNumber.ToString().PadLeft(4, '0'),
                     GateID = gates[gateIndex].Integer64ID,
@@ -185,5 +189,25 @@ public class FlightScheduleExampleBuilder
         {
             Name = "MU4",
         });
+    }
+
+    /// <summary>
+    /// The method generates all the airport code combinations.
+    /// </summary>
+    private void GenerateAirportCodes()
+    {
+        int capitalA = 'A';
+
+        for (int firstChar = 0; firstChar < 26; firstChar++)
+        {
+            for (int secondChar = 0; secondChar < 26; secondChar++)
+            {
+                for (int thirdChar = 0; thirdChar < 26; thirdChar++)
+                {
+                    string airportCode = ((char)(firstChar + capitalA)).ToString() + ((char)(secondChar + capitalA)).ToString() + ((char)(thirdChar + capitalA)).ToString();
+                    _airportCodes.Add(airportCode);
+                }
+            }
+        }
     }
 }

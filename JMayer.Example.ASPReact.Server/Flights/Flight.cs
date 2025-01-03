@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JMayer.Example.ASPReact.Server.Flights;
 
-#warning I need to decide if NextDestination is a string or a reference to an airport object.
-
 /// <summary>
 /// The class represents a flight in the flight schedule.
 /// </summary>

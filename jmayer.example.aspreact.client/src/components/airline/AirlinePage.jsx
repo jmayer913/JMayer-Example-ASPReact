@@ -8,13 +8,10 @@ import AirlineAddEditDialog from './AirlineAddEditDialog.jsx';
 import AirlineDeleteConfirmDialog from './AirlineDeleteConfirmDialog.jsx';
 import initialAirline, { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
 
-//TO DO: I need to figure out if the dataTableSelectedAirline and selection options are needed to edit/delete an airline.
-
 //The function returns the page for the airlines.
 export default function AirlinePage() {
     const { airlines, getAirlines } = useAirlineDataLayer();
     const [airline, setAirline] = useState(initialAirline);
-    const [dataTableSelectedAirline, setDataTableSelectedAirline] = useState(null);
     const [addEditDialogVisible, setAddEditDialogVisible] = useState(false);
     const [deleteConfirmDialogVisible, setDeleteConfirmDialogVisible] = useState(false);
     const [newRecord, setNewRecord] = useState(false);    
@@ -83,7 +80,6 @@ export default function AirlinePage() {
 
                 <DataTable value={airlines} filterDisplay="row" reorderableColumns stripedRows tableStyle={{ minWidth: '50rem' }}
                         paginator rows={10} rowsPerPageOptions={[10, 25, 50]}
-                        selectionMode="single" dataKey="integer64ID" selection={dataTableSelectedAirline} onSelectionChange={(e) => setDataTableSelectedAirline(e.value)}
                         removableSort sortField="name" sortOrder={1}>
                     <Column body={actionBodyTemple} exportable={false} style={{ minWidth: '12rem' }} />
                     <Column field="name" header="Name" filter sortable />

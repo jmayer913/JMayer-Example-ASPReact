@@ -8,13 +8,10 @@ import FlightAddEditDialog from './FlightAddEditDialog.jsx';
 import FlightDeleteConfirmDialog from './FlightDeleteConfirmDialog.jsx';
 import initialFlight, { useFlightDataLayer } from '../../datalayers/FlightDataLayer.jsx';
 
-//TO DO: I need to figure out if the dataTableSelectedFlight and selection options are needed to edit/delete a flight.
-
-//The function returns the page for the flight schedule (flight for today).
+//The function returns the page for the flight schedule (flights for today).
 export default function FlightSchedulePage() {
     const { flights, getFlights } = useFlightDataLayer();
     const [flight, setFlight] = useState(initialFlight);
-    const [dataTableSelectedFlight, setDataTableSelectedFlight] = useState(null);
     const [addEditDialogVisible, setAddEditDialogVisible] = useState(false);
     const [deleteConfirmDialogVisible, setDeleteConfirmDialogVisible] = useState(false);
     const [newRecord, setNewRecord] = useState(false);
@@ -83,7 +80,6 @@ export default function FlightSchedulePage() {
 
                 <DataTable value={flights} filterDisplay="row" reorderableColumns stripedRows tableStyle={{ minWidth: '50rem' }}
                         paginator rows={10} rowsPerPageOptions={[10, 25, 50]}
-                        selectionMode="single" dataKey="integer64ID" selection={dataTableSelectedFlight} onSelectionChange={(e) => setDataTableSelectedFlight(e.value)}
                         removableSort sortField="name" sortOrder={1}>
                     <Column body={actionBodyTemple} exportable={false} style={{ minWidth: '12rem' }} />
                     <Column field="gateName" header="Gate" filter sortable />

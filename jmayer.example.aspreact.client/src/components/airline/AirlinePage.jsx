@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
@@ -36,7 +36,7 @@ export default function AirlinePage() {
     //The function opens the add/edit dialog.
     const openAddEditDialog = (airline) => {
         if (airline === null) {
-            airline = { ...initialAirline }
+            airline = { ...initialAirline };
             setNewRecord(true);
         }
         else {
@@ -70,8 +70,8 @@ export default function AirlinePage() {
                 <Button icon="pi pi-trash" className="mr-2" rounded text onClick={() => openDeleteConfirmDialog(rowData)} />
                 <Button icon="pi pi-pencil" text onClick={() => openAddEditDialog(rowData)} />
             </React.Fragment>
-        )
-    }
+        );
+    };
 
     return (
         <>

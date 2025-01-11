@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useError } from '../components/errorDialog/ErrorProvider.jsx';
 import { shapeValidationResult } from './DataLayerHelper.jsx';
 
-//I don't know if I should have a hook per API call or a single hook with all the API calls.
-
 //Defines the initial airline object.
 const initialAirline = {
     name: '',

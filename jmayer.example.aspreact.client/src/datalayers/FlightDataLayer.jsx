@@ -21,7 +21,7 @@ export default initialFlight;
 //The function returns a hook to interact with the server for the flights.
 export function useFlightDataLayer() {
     const { showError } = useError();
-    const [flights, setFlights] = useState([])
+    const [flights, setFlights] = useState([]);
     const [addFlightServerSideResult, setAddFlightServerSideResult] = useState(null);
     const [addFlightSuccess, setAddFlightSuccess] = useState(false);
     const [deleteFlightSuccess, setDeleteFlightSuccess] = useState(false);

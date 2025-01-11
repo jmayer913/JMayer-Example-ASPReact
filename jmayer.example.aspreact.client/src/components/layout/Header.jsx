@@ -1,6 +1,7 @@
 import { Button } from 'primereact/button';
 
 //The function returns  the top header of the website.
+//@param {object} props The properties accepted by the component.
 //@param {function} props.openMenu Used by the component to show the sidebar menu.
 export default function Header({openMenu}) {
     return (

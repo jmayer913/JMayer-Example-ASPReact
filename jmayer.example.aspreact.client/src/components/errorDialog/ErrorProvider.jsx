@@ -28,7 +28,7 @@ export const ErrorProvider = ({ children }) => {
             {children}
         </ErrorContext.Provider>
     );
-};
+}
 
 //The function returns a hook used by the components to interact with the error context.
 export const useError = () => {

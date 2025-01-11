@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Column } from 'primereact/column';
@@ -36,7 +36,7 @@ export default function FlightSchedulePage() {
     //The function opens the add/edit dialog.
     const openAddEditDialog = (flight) => {
         if (flight === null) {
-            flight = { ...initialFlight }
+            flight = { ...initialFlight };
             setNewRecord(true);
         }
         else {
@@ -70,8 +70,8 @@ export default function FlightSchedulePage() {
                 <Button icon="pi pi-trash" className="mr-2" rounded text onClick={() => openDeleteConfirmDialog(rowData)} />
                 <Button icon="pi pi-pencil" text onClick={() => openAddEditDialog(rowData)} />
             </React.Fragment>
-        )
-    }
+        );
+    };
 
     return (
         <>

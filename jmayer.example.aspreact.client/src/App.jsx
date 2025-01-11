@@ -1,52 +1,47 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AirlinePage from './components/airline/AirlinePage.jsx';
+import FlightSchedulePage from './components/flightSchedule/FlightSchedulePage.jsx';
+import HomePage from './components/home/HomePage.jsx';
+import Header from './components/layout/Header.jsx';
+import Menu from './components/layout/Menu.jsx';
+import NotFoundPage from './components/NotFound/NotFoundPage.jsx';
+import ErrorDialog from './components/errorDialog/ErrorDialog.jsx';
+import 'primereact/resources/themes/lara-dark-indigo/theme.css';
+import 'primeflex/primeflex.css';
+import 'primeicons/primeicons.css';
 import './App.css';
 
+//The function returns the main layout of the website & the current page.
 function App() {
-    const [forecasts, setForecasts] = useState();
+    const [menuVisible, setMenuVisible] = useState(false);
 
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
+    //The function hides the menu.
+    const hideMenu = () => {
+        setMenuVisible(false);
+    };
 
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
+    //The function opens the menu.
+    const openMenu = () => {
+        setMenuVisible(true);
+    };
 
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
-    );
-    
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
+        <>
+            <Header openMenu={openMenu} />
+            <Menu visible={menuVisible} hide={hideMenu} />
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/Airline" element={<AirlinePage /> } />
+                    <Route path="/FlightSchedule" element={<FlightSchedulePage />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+            </BrowserRouter>
 
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
-        }
-    }
+            <ErrorDialog />
+        </>
+    );
 }
 
 export default App;

@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JMayer.Example.ASPReact.Server", "JMayer.Example.ASPReact.Server\JMayer.Example.ASPReact.Server.csproj", "{BB8D94C5-3455-49AF-8815-C479BE87A232}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JMayer.Example.ASPReact.Server", "JMayer.Example.ASPReact.Server\JMayer.Example.ASPReact.Server.csproj", "{BB8D94C5-3455-49AF-8815-C479BE87A232}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "jmayer.example.aspreact.client", "jmayer.example.aspreact.client\jmayer.example.aspreact.client.esproj", "{FDF94533-717C-4CFE-BD2B-FFD35D94E87D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{DDEDF8AE-D81E-4019-8164-77F1588D3320}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +25,10 @@ Global
 		{FDF94533-717C-4CFE-BD2B-FFD35D94E87D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDF94533-717C-4CFE-BD2B-FFD35D94E87D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FDF94533-717C-4CFE-BD2B-FFD35D94E87D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{DDEDF8AE-D81E-4019-8164-77F1588D3320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDEDF8AE-D81E-4019-8164-77F1588D3320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDEDF8AE-D81E-4019-8164-77F1588D3320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDEDF8AE-D81E-4019-8164-77F1588D3320}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,10 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { PrimeReactProvider } from 'primereact/api';
+import { ErrorProvider } from './components/errorDialog/ErrorProvider.jsx';
+import App from './App.jsx';
+import './index.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <PrimeReactProvider>
+        <ErrorProvider>
+            <App />
+        </ErrorProvider>
+    </PrimeReactProvider>
   </StrictMode>,
 )

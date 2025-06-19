@@ -7,6 +7,7 @@
     <SpaRoot>..\jmayer.example.aspreact.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

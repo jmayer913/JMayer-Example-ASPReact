@@ -6,7 +6,6 @@ using JMayer.Example.ASPReact.Server.Gates;
 using JMayer.Example.ASPReact.Server.SortDestinations;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
-using System.Security.Cryptography.Xml;
 using TestProject.Gates;
 
 namespace TestProject.Flights;
@@ -182,27 +181,28 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// <returns>A list of CodeShare objects.</returns>
     private async Task<List<CodeShare>> CreateCodeSharesAsync(string? codeshareCommaSeparatedList)
     {
-        List<CodeShare> codeshares = [];
-
-        if (codeshareCommaSeparatedList != null)
+        if (codeshareCommaSeparatedList is null)
         {
-            string[] splitCodeShares = codeshareCommaSeparatedList.Split([','], StringSplitOptions.RemoveEmptyEntries);
+            return [];
+        }
 
-            foreach (var codeshareString in splitCodeShares)
+        List<CodeShare> codeshares = [];
+        string[] splitCodeShares = codeshareCommaSeparatedList.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var codeshareString in splitCodeShares)
+        {
+            string airlineIATACode = codeshareString.Substring(0, 2);
+            string flightNumber = codeshareString.Substring(2);
+
+            Airline? airline = await GetAirlineByIATAAsync(airlineIATACode);
+
+            if (airline is not null)
             {
-                string airlineIATACode = codeshareString.Substring(0, 2);
-                string flightNumber = codeshareString.Substring(2);
-
-                Airline? airline = await GetAirlineByIATAAsync(airlineIATACode);
-
-                if (airline != null)
+                codeshares.Add(new CodeShare()
                 {
-                    codeshares.Add(new CodeShare()
-                    {
-                        AirlineID = airline.Integer64ID,
-                        FlightNumber = flightNumber,
-                    });
-                }
+                    AirlineID = airline.Integer64ID,
+                    FlightNumber = flightNumber,
+                });
             }
         }
 
@@ -220,7 +220,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         Airlines.AirlineDataLayer dataLayer = new(httpClient);
 
         List<Airline>? airlines = await dataLayer.GetAllAsync();
-
         return airlines?.FirstOrDefault(obj => obj.IATA == iata);
     }
 
@@ -235,7 +234,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         GateDataLyaer dataLayer = new(httpClient);
 
         List<Gate>? gates = await dataLayer.GetAllAsync();
-
         return gates?.FirstOrDefault(obj => obj.Name == name);
     }
 
@@ -250,7 +248,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         SortDestinations.SortDestinationDataLayer dataLayer = new(httpClient);
 
         List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync();
-
         return sortDestinations?.FirstOrDefault(obj => obj.Name == name);
     }
 
@@ -346,12 +343,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first flight.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first flight.");
 
         operationResult = await dataLayer.CreateAsync(new Flight()
         {
@@ -400,26 +392,23 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
 
         Gate? gate = await GetGateAsync(gateName);
 
-        if (gate == null)
+        if (gate is null)
         {
             Assert.Fail("Failed to retrieve the gate.");
-            return;
         }
         
         Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
 
-        if (airline == null)
+        if (airline is null)
         {
             Assert.Fail("Failed to retrieve the airline.");
-            return;
         }
 
         SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
 
-        if (sortDestination == null)
+        if (sortDestination is null)
         {
             Assert.Fail("Failed to retrieve the sort destination.");
-            return;
         }
 
         List<CodeShare> codeshares = await CreateCodeSharesAsync(codeshareCommaSeparatedList);
@@ -613,10 +602,9 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
 
         Airline? airline = await CreateAirlineAsync(AirlineCascadeDelete);
 
-        if (airline == null)
+        if (airline is null)
         {
             Assert.Fail("Failed to create the airline.");
-            return;
         }
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
@@ -629,26 +617,20 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
         });
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the flight.");
 
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the flight.");
-            return;
-        }
-
-        await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline);
+        operationResult = await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline);
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to delete the airline.");
 
         List<Flight>? flights = await dataLayer.GetAllAsync();
 
-        if (flights == null)
+        if (flights is null)
         {
             Assert.Fail("Failed to query the flights.");
         }
-        else
-        {
-            flights = flights.Where(obj => obj.AirlineID == airline.Integer64ID).ToList();
-            Assert.Empty(flights);
-        }
+        
+        flights = [.. flights.Where(obj => obj.AirlineID == airline.Integer64ID)];
+        Assert.Empty(flights);
     }
 
     /// <summary>
@@ -672,7 +654,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Flight flight)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             operationResult = await dataLayer.DeleteAsync(flight);
             Assert.True(operationResult.IsSuccessStatusCode);
@@ -692,7 +674,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
-
         List<Flight>? flights = await dataLayer.GetAllAsync();
 
         //Flights must have been returned.
@@ -709,7 +690,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
-
         List<ListView>? flights = await dataLayer.GetAllListViewAsync();
 
         //List view flights must have been returned.
@@ -765,12 +745,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first flight.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first flight.");
 
         operationResult = await dataLayer.CreateAsync(new Flight()
         {
@@ -838,26 +813,23 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
 
         Gate? gate = await GetGateAsync(gateName);
 
-        if (gate == null)
+        if (gate is null)
         {
             Assert.Fail("Failed to retrieve the gate.");
-            return;
         }
 
         Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
 
-        if (airline == null)
+        if (airline is null)
         {
             Assert.Fail("Failed to retrieve the airline.");
-            return;
         }
 
         SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
 
-        if (sortDestination == null)
+        if (sortDestination is null)
         {
             Assert.Fail("Failed to retrieve the sort destination.");
-            return;
         }
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
@@ -975,7 +947,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Flight flight)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             flight.Destination = BadFormatttedDestination;
             operationResult = await dataLayer.UpdateAsync(flight);
@@ -1021,7 +993,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Flight flight)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             flight.FlightNumber = BadFormatttedFlightNumber;
             operationResult = await dataLayer.UpdateAsync(flight);

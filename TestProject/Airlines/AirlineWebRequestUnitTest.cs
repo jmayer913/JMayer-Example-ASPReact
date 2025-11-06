@@ -3,7 +3,6 @@ using JMayer.Data.HTTP.DataLayer;
 using JMayer.Example.ASPReact.Server.Airlines;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
-using System.Security.Cryptography.Xml;
 
 namespace TestProject.Airlines;
 
@@ -201,12 +200,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate ICAO Test 1",
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -248,12 +242,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate Name Test",
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -295,12 +284,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "999",
             Name = "Add Duplicate Number Code Test 1",
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -357,7 +341,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             operationResult = await dataLayer.DeleteAsync(airline);
             Assert.True(operationResult.IsSuccessStatusCode);
@@ -435,7 +419,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         };
         OperationResult operationResult = await dataLayer.CreateAsync(airline);
 
-        if (operationResult.DataObject is Airline createdAirline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline createdAirline)
         {
             Airline? verifyAirline = await dataLayer.GetSingleAsync(createdAirline.Integer64ID);
             Assert.NotNull(verifyAirline);
@@ -518,7 +502,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = "Update Bad IATA Code Test",
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.IATA = BadFormattedIATACode;
             operationResult = await dataLayer.UpdateAsync(airline);
@@ -561,7 +545,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = "Update Bad ICAO Code Test",
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.ICAO = BadFormattedICAOCode;
             operationResult = await dataLayer.UpdateAsync(airline);
@@ -604,7 +588,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = "Update Bad Number Code Test",
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.NumberCode = BadFormattedNumberCode;
             operationResult = await dataLayer.UpdateAsync(airline);
@@ -647,7 +631,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
         });
 
-        if (operationResult.DataObject is Airline firstAirline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline firstAirline)
         {
             Airline secondAirline = new(firstAirline);
 
@@ -690,12 +674,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate ICAO Test 1",
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -747,12 +726,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate Name Test 1",
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -804,12 +778,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "997",
             Name = "Update Duplicate Number Code Test Test 1",
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {

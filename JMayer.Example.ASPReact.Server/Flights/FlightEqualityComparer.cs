@@ -56,7 +56,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
         {
             for (int index = 0; index < x.CodeShares.Count; index++)
             {
-                if (new CodeShareEqualityComparer().Equals(x.CodeShares[index], y.CodeShares[index]) == false)
+                if (new CodeShareEqualityComparer().Equals(x.CodeShares[index], y.CodeShares[index]) is false)
                 {
                     return false;
                 }

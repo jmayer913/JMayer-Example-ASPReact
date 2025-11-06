@@ -1,10 +1,7 @@
 ﻿using JMayer.Web.Mvc.Controller.Api;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace JMayer.Example.ASPReact.Server.Gates;
-
-#warning Should I use the NoAction attribute over returning a MethodNotAllowed status?
 
 /// <summary>
 /// The class manages HTTP requests for CRUD operations associated with a gate in a database.
@@ -21,9 +18,10 @@ public class GateController : StandardCRUDController<Gate, IGateDataLayer>
     /// Overriden to prevent the creation of new gates. The example will auto generate some default gates
     /// and the client side will only retrieve them but not edit them.
     /// </remarks>
+    [NonAction]
     public override Task<IActionResult> CreateAsync([FromBody] Gate dataObject)
     {
-        return Task.FromResult((IActionResult)StatusCode((int)HttpStatusCode.MethodNotAllowed));
+        return base.CreateAsync(dataObject);
     }
 
     /// <inheritdoc/>
@@ -31,9 +29,10 @@ public class GateController : StandardCRUDController<Gate, IGateDataLayer>
     /// Overriden to prevent the deletion of gates. The example will auto generate some default gates
     /// and the client side will only retrieve them but not edit them.
     /// </remarks>
-    public override Task<IActionResult> DeleteAsync(long integerID)
+    [NonAction]
+    public override Task<IActionResult> DeleteAsync(long id)
     {
-        return Task.FromResult((IActionResult)StatusCode((int)HttpStatusCode.MethodNotAllowed));
+        return base.DeleteAsync(id);
     }
 
     /// <inheritdoc/>
@@ -41,9 +40,10 @@ public class GateController : StandardCRUDController<Gate, IGateDataLayer>
     /// Overriden to prevent the deletion of gates. The example will auto generate some default gates
     /// and the client side will only retrieve them but not edit them.
     /// </remarks>
-    public override Task<IActionResult> DeleteAsync(string stringID)
+    [NonAction]
+    public override Task<IActionResult> DeleteAsync(string id)
     {
-        return Task.FromResult((IActionResult)StatusCode((int)HttpStatusCode.MethodNotAllowed));
+        return base.DeleteAsync(id);
     }
 
     /// <inheritdoc/>
@@ -51,8 +51,9 @@ public class GateController : StandardCRUDController<Gate, IGateDataLayer>
     /// Overriden to prevent the updating of gates. The example will auto generate some default gates
     /// and the client side will only retrieve them but not edit them.
     /// </remarks>
+    [NonAction]
     public override Task<IActionResult> UpdateAsync([FromBody] Gate dataObject)
     {
-        return Task.FromResult((IActionResult)StatusCode((int)HttpStatusCode.MethodNotAllowed));
+        return base.UpdateAsync(dataObject);
     }
 }

@@ -6,7 +6,7 @@ namespace JMayer.Example.ASPReact.Server.Airlines;
 /// <summary>
 /// The class represents an airline and its codes.
 /// </summary>
-public class Airline : UserEditableDataObject
+public class Airline : DataObject
 {
     /// <summary>
     /// The property gets/sets the IATA code assigned by the IATA organization.
@@ -20,6 +20,11 @@ public class Airline : UserEditableDataObject
     /// </summary>
     [RegularExpression("^[A-Z]{3}$", ErrorMessage = "The ICAO must be 3 capital letters.")]
     public string ICAO { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    /// <remarks>Overridden to add Required data annotation.</remarks>
+    [Required]
+    public override string? Name { get => base.Name; set => base.Name = value; }
 
     /// <summary>
     /// The property gets/sets the number code assigned by the IATA organization.

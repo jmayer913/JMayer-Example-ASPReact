@@ -9,7 +9,7 @@ namespace JMayer.Example.ASPReact.Server.Flights;
 /// <summary>
 /// The class manages CRUD interactions with the database for a flight.
 /// </summary>
-public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
+public class FlightDataLayer : StandardCRUDDataLayer<Flight>, IFlightDataLayer
 {
     /// <summary>
     /// Used to access the airline data.
@@ -62,30 +62,30 @@ public class FlightDataLayer : UserEditableDataLayer<Flight>, IFlightDataLayer
     {
         List<ValidationResult> validationResults = await base.ValidateAsync(dataObject, cancellationToken);
 
-        if (await _airlineDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.AirlineID, cancellationToken) == false)
+        if (await _airlineDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.AirlineID, cancellationToken) is false)
         {
             validationResults.Add(new ValidationResult($"The {dataObject.AirlineID} airline was not found in the data store.", [nameof(Flight.AirlineID)]));
         }
 
-        if (await _gateDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.GateID, cancellationToken) == false)
+        if (await _gateDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.GateID, cancellationToken) is false)
         {
             validationResults.Add(new ValidationResult($"The {dataObject.GateID} gate was not found in the data store.", [nameof(Flight.GateID)]));
         }
 
-        if (await _sortDestinationDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.SortDestinationID, cancellationToken) == false)
+        if (await _sortDestinationDataLayer.ExistAsync(obj => obj.Integer64ID == dataObject.SortDestinationID, cancellationToken) is false)
         {
             validationResults.Add(new ValidationResult($"The {dataObject.SortDestinationID} sort destination was not found in the data store.", [nameof(Flight.SortDestinationID)]));
         }
 
         foreach (var codeShare in dataObject.CodeShares)
         {
-            if (await _airlineDataLayer.ExistAsync(obj => obj.Integer64ID == codeShare.AirlineID, cancellationToken) == false)
+            if (await _airlineDataLayer.ExistAsync(obj => obj.Integer64ID == codeShare.AirlineID, cancellationToken) is false)
             {
                 validationResults.Add(new ValidationResult($"The {codeShare.AirlineID} airline for the codeshare was not found in the data store.", [nameof(CodeShare.AirlineID)]));
             }
         }
 
-        if (await ExistAsync(obj => obj.Integer64ID != dataObject.Integer64ID && obj.AirlineID == dataObject.AirlineID && obj.FlightNumber == dataObject.FlightNumber && obj.Destination == dataObject.Destination, cancellationToken) == true)
+        if (await ExistAsync(obj => obj.Integer64ID != dataObject.Integer64ID && obj.AirlineID == dataObject.AirlineID && obj.FlightNumber == dataObject.FlightNumber && obj.Destination == dataObject.Destination, cancellationToken) is true)
         {
             validationResults.Add(new ValidationResult("The flight already exists in the schedule.", [nameof(Flight.FlightNumber)]));
         }

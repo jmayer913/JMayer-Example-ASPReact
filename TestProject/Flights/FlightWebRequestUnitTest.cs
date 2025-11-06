@@ -6,6 +6,7 @@ using JMayer.Example.ASPReact.Server.Gates;
 using JMayer.Example.ASPReact.Server.SortDestinations;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Security.Cryptography.Xml;
 using TestProject.Gates;
 
 namespace TestProject.Flights;
@@ -283,13 +284,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The city must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.Destination), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.Destination));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.Destination)]);
+        Assert.Equal("The city must be 3 capital letters.", operationResult.ValidationErrors[nameof(Flight.Destination)][0]);
     }
 
     /// <summary>
@@ -322,13 +320,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+        Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
     }
 
     /// <summary>
@@ -378,13 +373,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("flight already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+        Assert.Equal("The flight already exists in the schedule.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
     }
 
     /// <summary>
@@ -480,13 +472,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("airline was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+        Assert.Equal($"The {BadAirlineID} airline was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
     }
 
     /// <summary>
@@ -520,13 +509,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("airline for the codeshare was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(CodeShare.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+        Assert.Equal($"The {BadAirlineID} airline for the codeshare was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
     }
 
     /// <summary>
@@ -559,13 +545,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("gate was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.GateID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.GateID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.GateID)]);
+        Assert.Equal($"The {BadGateID} gate was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.GateID)][0]);
     }
 
     /// <summary>
@@ -598,13 +581,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("sort destination was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.SortDestinationID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.SortDestinationID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.SortDestinationID)]);
+        Assert.Equal($"The {BadSortDestinationID} sort destination was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.SortDestinationID)][0]);
     }
 
     /// <summary>
@@ -826,13 +806,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("flight already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+            Assert.Equal("The flight already exists in the schedule.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
         }
         else
         {
@@ -966,13 +943,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("airline was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+            Assert.Equal($"The {BadAirlineID} airline was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
         }
         else
         {
@@ -1015,13 +989,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The city must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.Destination), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.Destination));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.Destination)]);
+            Assert.Equal("The city must be 3 capital letters.", operationResult.ValidationErrors[nameof(Flight.Destination)][0]);
         }
         else
         {
@@ -1064,13 +1035,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+            Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
         }
         else
         {
@@ -1123,13 +1091,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("airline for the codeshare was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(CodeShare.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+            Assert.Equal($"The {BadAirlineID} airline for the codeshare was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
         }
         else
         {
@@ -1181,13 +1146,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("gate was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.GateID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.GateID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.GateID)]);
+            Assert.Equal($"The {BadGateID} gate was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.GateID)][0]);
         }
         else
         {
@@ -1239,13 +1201,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("sort destination was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.SortDestinationID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.SortDestinationID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.SortDestinationID)]);
+            Assert.Equal($"The {BadSortDestinationID} sort destination was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.SortDestinationID)][0]);
         }
         else
         {

@@ -3,6 +3,7 @@ using JMayer.Data.HTTP.DataLayer;
 using JMayer.Example.ASPReact.Server.Airlines;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Security.Cryptography.Xml;
 
 namespace TestProject.Airlines;
 
@@ -111,13 +112,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.IATA), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.IATA));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.IATA)]);
+        Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ValidationErrors[nameof(Airline.IATA)][0]);
     }
 
     /// <summary>
@@ -147,13 +145,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+        Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
     }
 
     /// <summary>
@@ -183,13 +178,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The number code must be 3 digits.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+        Assert.Equal("The number code must be 3 digits.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
     }
 
     /// <summary>
@@ -233,13 +225,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("ICAO must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+        Assert.Equal("The ICAO must be unique.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
     }
 
     /// <summary>
@@ -283,13 +272,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("name already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.Name), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.Name));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.Name)]);
+        Assert.Equal("The Add Duplicate Name Test name already exists in the data store.", operationResult.ValidationErrors[nameof(Airline.Name)][0]);
     }
 
     /// <summary>
@@ -333,13 +319,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("number code must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+        Assert.Equal("The number code must be unique unless the code is 000.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
     }
 
     /// <summary>
@@ -549,13 +532,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.IATA), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.IATA));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.IATA)]);
+            Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ValidationErrors[nameof(Airline.IATA)][0]);
         }
         else
         {
@@ -595,13 +575,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+            Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
         }
         else
         {
@@ -641,13 +618,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The number code must be 3 digits.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+            Assert.Equal("The number code must be 3 digits.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
         }
         else
         {
@@ -745,13 +719,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("ICAO must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+            Assert.Equal("The ICAO must be unique.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
         }
         else
         {
@@ -805,13 +776,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("name already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.Name), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.Name));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.Name)]);
+            Assert.Equal($"The {airline.Name} name already exists in the data store.", operationResult.ValidationErrors[nameof(Airline.Name)][0]);
         }
         else
         {
@@ -865,13 +833,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("number code must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+            Assert.Equal("The number code must be unique unless the code is 000.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
         }
         else
         {

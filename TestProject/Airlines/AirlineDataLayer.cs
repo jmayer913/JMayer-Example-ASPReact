@@ -6,7 +6,7 @@ namespace TestProject.Airlines;
 /// <summary>
 /// The class manages CRUD interactions with a remote server for an airline.
 /// </summary>
-internal class AirlineDataLayer : UserEditableDataLayer<Airline>
+internal class AirlineDataLayer : StandardCRUDDataLayer<Airline>
 {
     /// <inheritdoc/>
     public AirlineDataLayer(HttpClient httpClient) : base(httpClient) { }

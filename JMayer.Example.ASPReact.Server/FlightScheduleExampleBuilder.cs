@@ -111,10 +111,10 @@ public class FlightScheduleExampleBuilder
                     DepartTime = departTime,
                     FlightNumber = flightNumber.ToString().PadLeft(4, '0'),
                     GateID = gates[gateIndex].Integer64ID,
-                    GateName = gates[gateIndex].Name,
+                    GateName = gates[gateIndex].Name ?? string.Empty,
                     Name = $"{airline.IATA}{flightNumber.ToString().PadLeft(4, '0')}",
                     SortDestinationID = sortDestinations[sortDestinationIndex].Integer64ID,
-                    SortDestinationName = sortDestinations[sortDestinationIndex].Name,
+                    SortDestinationName = sortDestinations[sortDestinationIndex].Name ?? string.Empty,
                 });
 
                 flightNumber++;

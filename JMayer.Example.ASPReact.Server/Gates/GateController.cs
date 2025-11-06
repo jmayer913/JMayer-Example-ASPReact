@@ -1,15 +1,17 @@
-﻿using JMayer.Web.Mvc.Controller;
+﻿using JMayer.Web.Mvc.Controller.Api;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace JMayer.Example.ASPReact.Server.Gates;
+
+#warning Should I use the NoAction attribute over returning a MethodNotAllowed status?
 
 /// <summary>
 /// The class manages HTTP requests for CRUD operations associated with a gate in a database.
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class GateController : UserEditableController<Gate, IGateDataLayer>
+public class GateController : StandardCRUDController<Gate, IGateDataLayer>
 {
     /// <inheritdoc/>
     public GateController(IGateDataLayer dataLayer, ILogger<GateController> logger) : base(dataLayer, logger) { }

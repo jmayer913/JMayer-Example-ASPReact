@@ -43,7 +43,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
     /// <inheritdoc/>
     public bool Equals(Flight? x, Flight? y)
     {
-        if (x == null || y == null)
+        if (x is null || y is null)
         {
             return false;
         }

@@ -10,7 +10,7 @@ public class CodeShareEqualityComparer : IEqualityComparer<CodeShare>
     /// <inheritdoc/>
     public bool Equals(CodeShare? x, CodeShare? y)
     {
-        if (x == null || y == null)
+        if (x is null || y is null)
         {
             return false;
         }

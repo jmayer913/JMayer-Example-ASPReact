@@ -18,7 +18,7 @@ public class FlightScheduleExampleBuilder
     /// <summary>
     /// The property gets/sets the data layer used to interact with airlines.
     /// </summary>
-    public IAirlineDataLayer AirlineDataLayer { get; init; } = new AirlineDataLayer();
+    public IAirlineDataLayer AirlineDataLayer { get; init; }
 
     /// <summary>
     /// The property gets/sets the data layer used to ineract with the flights.
@@ -36,10 +36,16 @@ public class FlightScheduleExampleBuilder
     public ISortDestinationDataLayer SortDestinationDataLayer { get; init; } = new SortDestinationDataLayer();
 
     /// <summary>
+    /// The constant for the southwest IATA code.
+    /// </summary>
+    private const string SouthwestIataCode = "WN";
+
+    /// <summary>
     /// The default constructor.
     /// </summary>
     public FlightScheduleExampleBuilder()
     {
+        AirlineDataLayer = new AirlineDataLayer(SortDestinationDataLayer);
         FlightDataLayer = new FlightDataLayer(AirlineDataLayer, GateDataLayer, SortDestinationDataLayer);
         GenerateAirportCodes();
     }
@@ -49,9 +55,9 @@ public class FlightScheduleExampleBuilder
     /// </summary>
     public void Build()
     {
+        BuildSortDestinations();
         BuildAirlines();
         BuildGates();
-        BuildSortDestinations();
         BuildFlights();
     }
 
@@ -60,12 +66,16 @@ public class FlightScheduleExampleBuilder
     /// </summary>
     private void BuildAirlines()
     {
+        List<SortDestination> sortDestinations = SortDestinationDataLayer.GetAllAsync().Result;
+
         _ = AirlineDataLayer.CreateAsync(new Airline()
         {
             IATA = "AA",
             ICAO = "AAL",
             Name = "American Airlines",
             NumberCode = "001",
+            SortDestinationID = sortDestinations[0].Integer64ID,
+            SortDestinationName = sortDestinations[0].Name ?? string.Empty,
         });
         _ = AirlineDataLayer.CreateAsync(new Airline()
         {
@@ -73,6 +83,8 @@ public class FlightScheduleExampleBuilder
             ICAO = "DAL",
             Name = "Delta Air Lines",
             NumberCode = "006",
+            SortDestinationID = sortDestinations[1].Integer64ID,
+            SortDestinationName = sortDestinations[1].Name ?? string.Empty,
         });
         _ = AirlineDataLayer.CreateAsync(new Airline()
         {
@@ -80,6 +92,8 @@ public class FlightScheduleExampleBuilder
             ICAO = "SWA",
             Name = "Southwest Airlines",
             NumberCode = "526",
+            SortDestinationID = sortDestinations[2].Integer64ID,
+            SortDestinationName = sortDestinations[2].Name ?? string.Empty,
         });
     }
 
@@ -92,9 +106,9 @@ public class FlightScheduleExampleBuilder
         List<Gate> gates = GateDataLayer.GetAllAsync().Result;
         List<SortDestination> sortDestinations = SortDestinationDataLayer.GetAllAsync().Result;
 
+        bool useMU4 = false;
         int flightNumber = 1000;
         int gateIndex = 0;
-        int sortDestinationIndex = 0;
         TimeSpan departTime = new(4, 0, 0);
         TimeSpan operationalEnd = new(22, 0, 0);
 
@@ -113,13 +127,12 @@ public class FlightScheduleExampleBuilder
                     GateID = gates[gateIndex].Integer64ID,
                     GateName = gates[gateIndex].Name ?? string.Empty,
                     Name = $"{airline.IATA}{flightNumber.ToString().PadLeft(4, '0')}",
-                    SortDestinationID = sortDestinations[sortDestinationIndex].Integer64ID,
-                    SortDestinationName = sortDestinations[sortDestinationIndex].Name ?? string.Empty,
+                    SortDestinationID = airline.IATA == SouthwestIataCode && useMU4 ? sortDestinations[3].Integer64ID : airline.SortDestinationID,
+                    SortDestinationName = airline.IATA == SouthwestIataCode && useMU4 ? sortDestinations[3].Name ?? string.Empty : airline.SortDestinationName,
                 });
 
                 flightNumber++;
                 gateIndex++;
-                sortDestinationIndex++;
                 departTime = departTime.Add(TimeSpan.FromMinutes(10));
 
                 if (gateIndex > gates.Count - 1)
@@ -127,9 +140,9 @@ public class FlightScheduleExampleBuilder
                     gateIndex = 0;
                 }
 
-                if (sortDestinationIndex > sortDestinations.Count - 1)
+                if (airline.IATA == SouthwestIataCode)
                 {
-                    sortDestinationIndex = 0;
+                    useMU4 = !useMU4;
                 }
             }
         }

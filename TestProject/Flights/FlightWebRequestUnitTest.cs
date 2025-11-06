@@ -169,6 +169,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         {
             IATA = iata,
             Name = iata,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         return operationResult.DataObject as Airline;

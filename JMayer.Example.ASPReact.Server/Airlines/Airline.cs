@@ -34,6 +34,16 @@ public class Airline : DataObject
     public string NumberCode { get; set; } = ZeroNumberCode;
 
     /// <summary>
+    /// The property gets/sets the id for the default sort destintion assigned to the airline.
+    /// </summary>
+    public long SortDestinationID { get; set; }
+
+    /// <summary>
+    /// The property gets/sets the name of the default sort destination assigned to the airline.
+    /// </summary>
+    public string SortDestinationName { get; set; } = string.Empty;
+
+    /// <summary>
     /// The constant for the zero number code.
     /// </summary>
     public const string ZeroNumberCode = "000";
@@ -59,6 +69,8 @@ public class Airline : DataObject
             IATA = airline.IATA;
             ICAO = airline.ICAO;
             NumberCode = airline.NumberCode;
+            SortDestinationID = airline.SortDestinationID;
+            SortDestinationName = airline.SortDestinationName;
         }
     }
 }

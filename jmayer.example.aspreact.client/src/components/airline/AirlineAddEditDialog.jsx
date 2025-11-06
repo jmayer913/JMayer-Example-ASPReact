@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { useAirlineDataLayer } from '../../datalayers/AirlineDataLayer.jsx';
+import { useSortDestinationDataLayer } from '../../datalayers/SortDestinationDataLayer.jsx';
 
 //The function returns the dialog for adding or updating an airline.
 //@param {object} props The properties accepted by the component.
@@ -16,8 +18,16 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
     const [icaoValidationError, setIcaoValidationError] = useState('');
     const [nameValidationError, setNameValidationError] = useState('');
     const [numberCodeValidationError, setNumberCodeValidationError] = useState('');
+    const [sortDestinationValidationError, setSortDestinationValidationError] = useState('');
     const { addAirline, addAirlineServerSideResult, addAirlineSuccess, updateAirline, updateAirlineServerSideResult, updateAirlineSuccess } = useAirlineDataLayer();
+    const { sortDestinations, getSortDestinations } = useSortDestinationDataLayer();
 
+    //Load the destinations when the component mounts.
+    useEffect(() => {
+        getSortDestinations();
+    }, []);
+
+    //Handle state changes based on add/update operations.
     useEffect(() => {
         //Hide the dialog on a successful add or update.
         if (addAirlineSuccess || updateAirlineSuccess) {
@@ -40,6 +50,7 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
         setIcaoValidationError('');
         setNameValidationError('');
         setNumberCodeValidationError('');
+        setSortDestinationValidationError('');
         hide();
     };
 
@@ -49,8 +60,9 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
         const icoaPass = validateICOA();
         const namePass = validateName();
         const numberCodePass = validateNumberCode();
+        const sortDestinationPass = validateSortDestination();
 
-        return iataPass && icoaPass && namePass && numberCodePass;
+        return iataPass && icoaPass && namePass && numberCodePass && sortDestinationPass;
     };
 
     //The function processes the server side validation result and sets any validation errors.
@@ -69,6 +81,9 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
                     break;
                 case 'NumberCode':
                     setNumberCodeValidationError(error.errorMessage);
+                    break;
+                case 'SortDestinationID':
+                    setSortDestinationValidationError(error.errorMessage);
                     break;
             }
         }
@@ -118,6 +133,16 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
             numberCode: value
         });
     };
+
+    //The function updates the sort destination field with the value selected by the user.
+    //@param {sortDestination} sortDestination The sort desstination the user selected.
+    const setSortDestination = (sortDestination) => {
+        setAirline({
+            ...airline,
+            sortDestinationID: sortDestination.integer64ID,
+            sortDestinationName: sortDestination.name
+        });
+    }
 
     //The function returns if the airline's IATA field passed validation.
     const validateIATA = () => {
@@ -183,6 +208,19 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
         return !error;
     };
 
+    //The function returns if the airline's sort destination field passed validation.
+    const validateSortDestination = () => {
+        let error = '';
+
+        if (airline.sortDestinationID === 0) {
+            error = 'The sort destination is required.';
+        }
+
+        setSortDestinationValidationError(error);
+
+        return !error;
+    };
+
     //The footer for the dialog.
     const footer = (
         <React.Fragment>
@@ -217,6 +255,11 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
                     <label htmlFor="number-code" className="font-bold">Number Code</label>
                     <InputText id="number-code" value={airline.numberCode} maxLength="3" keyfilter="int" placeholder="Enter the 3 digit code" onBlur={(e) => validateNumberCode()} onChange={(e) => setNumberCode(e.target.value)} />
                     {numberCodeValidationError && <small className="p-error">{numberCodeValidationError}</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="sort-destination" className="font-bold">Sort Destination</label>
+                    <Dropdown id="sort-destination" value={sortDestinations.find((element) => element.integer64ID == airline.sortDestinationID)} options={sortDestinations} optionLabel="name" filter placeholder="Select a default sort destination for the airline's baggage" onBlur={(e) => validateSortDestination()} onChange={(e) => setSortDestination(e.value)} />
+                    {sortDestinationValidationError && <small className="p-error">{sortDestinationValidationError}</small>}
                 </div>
             </Dialog>
         </>

@@ -9,6 +9,8 @@ const initialAirline = {
     iata: '',
     icao: '',
     numberCode: '',
+    sortDestinationID: 0,
+    sortDestinationName: '',
 };
 export default initialAirline;
 

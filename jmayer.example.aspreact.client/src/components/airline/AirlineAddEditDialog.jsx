@@ -14,13 +14,13 @@ import { useSortDestinationDataLayer } from '../../datalayers/SortDestinationDat
 //@param {bool} props.visible Used to control if the dialog is visible or not.
 //@param {function} props.hide Used to hide the dialog.
 export default function AirlineAddEditDialog({ newRecord, airline, setAirline, visible, hide }) {
+    const { addAirline, addAirlineValidationProblemDetails, addAirlineSuccess, updateAirline, updateAirlineValidationProblemDetails, updateAirlineSuccess } = useAirlineDataLayer();
+    const { sortDestinations, getSortDestinations } = useSortDestinationDataLayer();
     const [iataValidationError, setIataValidationError] = useState('');
     const [icaoValidationError, setIcaoValidationError] = useState('');
     const [nameValidationError, setNameValidationError] = useState('');
     const [numberCodeValidationError, setNumberCodeValidationError] = useState('');
     const [sortDestinationValidationError, setSortDestinationValidationError] = useState('');
-    const { addAirline, addAirlineServerSideResult, addAirlineSuccess, updateAirline, updateAirlineServerSideResult, updateAirlineSuccess } = useAirlineDataLayer();
-    const { sortDestinations, getSortDestinations } = useSortDestinationDataLayer();
 
     //Load the destinations when the component mounts.
     useEffect(() => {
@@ -34,15 +34,15 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
             hide();
         }
 
-        //Handle displays server side errors.
-        if (addAirlineServerSideResult !== null) {
-            processServerSideValidationResult(addAirlineServerSideResult);
+        //Handle displayings server side errors.
+        if (addAirlineValidationProblemDetails !== null) {
+            processValidationProblemDetails(addAirlineValidationProblemDetails);
         }
-        else if (updateAirlineServerSideResult !== null) {
-            processServerSideValidationResult(updateAirlineServerSideResult);
+        else if (updateAirlineValidationProblemDetails !== null) {
+            processValidationProblemDetails(updateAirlineValidationProblemDetails);
         }
 
-    }, [addAirlineServerSideResult, addAirlineSuccess, updateAirlineServerSideResult, updateAirlineSuccess]);
+    }, [addAirlineValidationProblemDetails, addAirlineSuccess, updateAirlineValidationProblemDetails, updateAirlineSuccess]);
 
     //The function clears the validation and closes the dialog.
     const closeDialog = () => {
@@ -65,25 +65,25 @@ export default function AirlineAddEditDialog({ newRecord, airline, setAirline, v
         return iataPass && icoaPass && namePass && numberCodePass && sortDestinationPass;
     };
 
-    //The function processes the server side validation result and sets any validation errors.
-    //@param {object} serverSideValidationResult What the server found wrong with the user input.
-    const processServerSideValidationResult = (serverSideValidationResult) => {
-        for (const error of serverSideValidationResult.errors) {
-            switch (error.propertyName) {
+    //The function processes the validation problem details returned by the server.
+    //@param {object} result The validation problem details returned by the server.
+    const processValidationProblemDetails = (details) => {
+        for (const key in details.errors) {
+            switch (key) {
                 case 'Name':
-                    setNameValidationError(error.errorMessage);
+                    setNameValidationError(details.errors[key][0]);
                     break;
                 case 'IATA':
-                    setIataValidationError(error.errorMessage);
+                    setIataValidationError(details.errors[key][0]);
                     break;
                 case 'ICAO':
-                    setIcaoValidationError(error.errorMessage);
+                    setIcaoValidationError(details.errors[key][0]);
                     break;
                 case 'NumberCode':
-                    setNumberCodeValidationError(error.errorMessage);
+                    setNumberCodeValidationError(details.errors[key][0]);
                     break;
                 case 'SortDestinationID':
-                    setSortDestinationValidationError(error.errorMessage);
+                    setSortDestinationValidationError(details.errors[key][0]);
                     break;
             }
         }

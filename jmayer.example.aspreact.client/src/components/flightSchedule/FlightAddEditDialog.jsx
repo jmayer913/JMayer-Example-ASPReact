@@ -17,7 +17,7 @@ import { useSortDestinationDataLayer } from '../../datalayers/SortDestinationDat
 //@param {function} props.hide Used to hide the dialog.
 export default function FlightAddEditDialog({ newRecord, flight, setFlight, visible, hide }) {
     const { airlines, getAirlines } = useAirlineDataLayer();
-    const { addFlight, addFlightServerSideResult, addFlightSuccess, updateFlight, updateFlightServerSideResult, updateFlightSuccess } = useFlightDataLayer();
+    const { addFlight, addFlightValidationProblemDetails, addFlightSuccess, updateFlight, updateFlightValidationProblemDetails, updateFlightSuccess } = useFlightDataLayer();
     const { gates, getGates } = useGateDataLayer();
     const { sortDestinations, getSortDestinations } = useSortDestinationDataLayer();
     const [airlineValidationError, setAirlineValidationError] = useState('');
@@ -51,15 +51,15 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, visi
             hide();
         }
 
-        //Handle displays server side errors.
-        if (addFlightServerSideResult !== null) {
-            processServerSideValidationResult(addFlightServerSideResult);
+        //Handle displayings server side errors.
+        if (addFlightValidationProblemDetails !== null) {
+            processValidationProblemDetails(addFlightValidationProblemDetails);
         }
-        else if (updateFlightServerSideResult !== null) {
-            processServerSideValidationResult(updateFlightServerSideResult);
+        else if (updateFlightValidationProblemDetails !== null) {
+            processValidationProblemDetails(updateFlightValidationProblemDetails);
         }
 
-    }, [addFlightServerSideResult, addFlightSuccess, updateFlightServerSideResult, updateFlightSuccess]);
+    }, [addFlightValidationProblemDetails, addFlightSuccess, updateFlightValidationProblemDetails, updateFlightSuccess]);
 
     //The function clears the validation and closes the dialog.
     const closeDialog = () => {
@@ -82,16 +82,16 @@ export default function FlightAddEditDialog({ newRecord, flight, setFlight, visi
         return airlinePass && destinationPass && gatePass && flightNumberPass && sortDestinaitonPass;
     };
 
-    //The function processes the server side validation result and sets any validation errors.
-    //@param {object} serverSideValidationResult What the server found wrong with the user input.
-    const processServerSideValidationResult = (serverSideValidationResult) => {
-        for (const error of serverSideValidationResult.errors) {
-            switch (error.propertyName) {
+    //The function processes the validation problem details returned by the server.
+    //@param {object} result The validation problem details returned by the server.
+    const processValidationProblemDetails = (details) => {
+        for (const key in details.errors) {
+            switch (key) {
                 case 'Destination':
-                    setDestinationValidationError(error.errorMessage);
+                    setDestinationValidationError(details.errors[key][0]);
                     break;
                 case 'FlightNumber':
-                    setFlightNumberValidationError(error.errorMessage);
+                    setFlightNumberValidationError(details.errors[key][0]);
                     break;
             }
         }

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useError } from '../components/errorDialog/ErrorProvider.jsx';
-import { shapeValidationResult } from './DataLayerHelper.jsx';
 
 //Defines the initial airline object.
 const initialAirline = {
@@ -19,10 +18,10 @@ export function useAirlineDataLayer() {
     const { showError } = useError();
     const [airlines, setAirlines] = useState([]);
     const [addAirlineSuccess, setAddAirlineSuccess] = useState(false);
-    const [addAirlineServerSideResult, setAddAirlineServerSideResult] = useState(null);
+    const [addAirlineValidationProblemDetails, setAddAirlineValidationProblemDetails] = useState(null);
     const [deleteAirlineSuccess, setDeleteAirlineSuccess] = useState(false);
     const [updateAirlineSuccess, setUpdateAirlineSuccess] = useState(false);
-    const [updateAirlineServerSideResult, setUpdateAirlineServerSideResult] = useState(null);
+    const [updateAirlineValidationProblemDetails, setUpdateAirlineValidationProblemDetails] = useState(null);
 
     //The function adds an airline to the server.
     //@param {object} airline The airline to add.
@@ -40,8 +39,11 @@ export function useAirlineDataLayer() {
                 if (response.ok) {
                     setAddAirlineSuccess(true);
                 }
-                else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => setAddAirlineServerSideResult(shapeValidationResult(serverSideValidationResult)));
+                else if (response.status === 400) {
+                    response.json().then(validationProblemDetails => setAddAirlineValidationProblemDetails(validationProblemDetails));
+                }
+                else if (response.status === 500) {
+                    response.json().then(problemDetails => showError(problemDetails.detail));
                 }
                 else {
                     showError('Failed to create the airline because of an error on the server.');
@@ -52,11 +54,11 @@ export function useAirlineDataLayer() {
 
     //The function clears the states before an operation.
     const clearStates = () => {
-        setAddAirlineServerSideResult(null);
         setAddAirlineSuccess(false);
+        setAddAirlineValidationProblemDetails(null);
         setDeleteAirlineSuccess(false);
-        setUpdateAirlineServerSideResult(null);
         setUpdateAirlineSuccess(false);
+        setUpdateAirlineValidationProblemDetails(null);
     };
 
     //The function deletes an airline from the server.
@@ -70,6 +72,9 @@ export function useAirlineDataLayer() {
             .then(response => {
                 if (response.ok) {
                     setDeleteAirlineSuccess(true);
+                }
+                else if (response.status === 500) {
+                    response.json().then(problemDetails => showError(problemDetails.detail));
                 }
                 else {
                     showError('Failed to delete the airline because of an error on the server.');
@@ -102,11 +107,11 @@ export function useAirlineDataLayer() {
                 if (response.ok) {
                     setUpdateAirlineSuccess(true);
                 }
-                else if (response.status == 400) {
-                    response.json().then(serverSideValidationResult => setUpdateAirlineServerSideResult(shapeValidationResult(serverSideValidationResult)));
+                else if (response.status === 400) {
+                    response.json().then(validationProblemDetails => setUpdateAirlineValidationProblemDetails(validationProblemDetails));
                 }
-                else if (response.status == 409) {
-                    showError('The submitted data was detected to be out of date; please refresh and try again.');
+                else if (response.status == 409 || response.status === 500) {
+                    response.json().then(problemDetails => showError(problemDetails.detail));
                 }
                 else {
                     showError('Failed to update the airline because of an error on the server.');
@@ -119,12 +124,12 @@ export function useAirlineDataLayer() {
         airlines,
         getAirlines,
         addAirline,
-        addAirlineServerSideResult,
+        addAirlineValidationProblemDetails,
         addAirlineSuccess,
         deleteAirline,
         deleteAirlineSuccess,
         updateAirline,
-        updateAirlineServerSideResult,
+        updateAirlineValidationProblemDetails,
         updateAirlineSuccess
     };
 };

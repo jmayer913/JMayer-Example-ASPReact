@@ -34,6 +34,8 @@ public class FlightDataLayer : StandardCRUDDataLayer<Flight>, IFlightDataLayer
     /// <param name="sortDestinationDataLayer">Used to access the sort desintation data.</param>
     public FlightDataLayer(IAirlineDataLayer airlineDataLayer, IGateDataLayer gateDataLayer, ISortDestinationDataLayer sortDestinationDataLayer)
     {
+        IsOldDataObjectDetectionEnabled = true;
+
         _airlineDataLayer = airlineDataLayer;
         _gateDataLayer = gateDataLayer;
         _sortDestinationDataLayer = sortDestinationDataLayer;

@@ -20,8 +20,10 @@ public class AirlineDataLayer : StandardCRUDDataLayer<Airline>, IAirlineDataLaye
     /// <param name="sortDestinationDataLayer"></param>
     public AirlineDataLayer(ISortDestinationDataLayer sortDestinationDataLayer)
     {
-        _sortDestinationDataLayer = sortDestinationDataLayer;
+        IsOldDataObjectDetectionEnabled = true;
         IsUniqueNameRequired = true;
+
+        _sortDestinationDataLayer = sortDestinationDataLayer;
     }
 
     /// <inheritdoc/>

@@ -47,6 +47,14 @@ public class SortDestinationController : StandardCRUDController<SortDestination,
     }
 
     /// <inheritdoc/>
+    /// <remarks>Overridden to hide the string version of this. The client doesn't use it and swagger complains about a conflict when its exposed.</remarks>
+    [NonAction]
+    public override Task<IActionResult> GetSingleAsync(string id)
+    {
+        return base.GetSingleAsync(id);
+    }
+
+    /// <inheritdoc/>
     /// <remarks>
     /// Overriden to prevent the updating of sort destinations. The example will auto generate some default sort destinations
     /// and the client side will only retrieve them but not edit them.

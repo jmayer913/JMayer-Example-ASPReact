@@ -12,4 +12,20 @@ public class FlightController : StandardCRUDController<Flight, IFlightDataLayer>
 {
     /// <inheritdoc/>
     public FlightController(IFlightDataLayer dataLayer, ILogger<FlightController> logger) : base(dataLayer, logger) { }
+
+    /// <inheritdoc/>
+    /// <remarks>Overridden to hide the string version of this. The client doesn't use it and swagger complains about a conflict when its exposed.</remarks>
+    [NonAction]
+    public override Task<IActionResult> DeleteAsync(string id)
+    {
+        return base.DeleteAsync(id);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Overridden to hide the string version of this. The client doesn't use it and swagger complains about a conflict when its exposed.</remarks>
+    [NonAction]
+    public override Task<IActionResult> GetSingleAsync(string id)
+    {
+        return base.GetSingleAsync(id);
+    }
 }

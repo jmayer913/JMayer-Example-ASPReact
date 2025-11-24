@@ -47,6 +47,14 @@ public class GateController : StandardCRUDController<Gate, IGateDataLayer>
     }
 
     /// <inheritdoc/>
+    /// <remarks>Overridden to hide the string version of this. The client doesn't use it and swagger complains about a conflict when its exposed.</remarks>
+    [NonAction]
+    public override Task<IActionResult> GetSingleAsync(string id)
+    {
+        return base.GetSingleAsync(id);
+    }
+
+    /// <inheritdoc/>
     /// <remarks>
     /// Overriden to prevent the updating of gates. The example will auto generate some default gates
     /// and the client side will only retrieve them but not edit them.

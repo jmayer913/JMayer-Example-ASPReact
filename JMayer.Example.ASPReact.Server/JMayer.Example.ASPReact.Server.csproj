@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="JMayer.Web.Mvc" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
       <Version>9.0.11</Version>
     </PackageReference>
@@ -21,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\JMayer-Web-Mvc-Library\JMayer.Web.Mvc\JMayer.Web.Mvc.csproj" />
     <ProjectReference Include="..\jmayer.example.aspreact.client\jmayer.example.aspreact.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

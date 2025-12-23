@@ -43,7 +43,7 @@ public class AirlineEqualityComparer : IEqualityComparer<Airline>
     /// <inheritdoc/>
     public bool Equals(Airline? x, Airline? y)
     {
-        if (x == null || y == null)
+        if (x is null || y is null)
         {
             return false;
         }
@@ -55,7 +55,8 @@ public class AirlineEqualityComparer : IEqualityComparer<Airline>
             && (_excludeID || x.Integer64ID == y.Integer64ID)
             && (_excludeLastEditedOn || x.LastEditedBy == y.LastEditedBy)
             && x.Name == y.Name
-            && x.NumberCode == y.NumberCode;
+            && x.NumberCode == y.NumberCode
+            && x.SortDestinationID == y.SortDestinationID;
     }
 
     /// <inheritdoc/>

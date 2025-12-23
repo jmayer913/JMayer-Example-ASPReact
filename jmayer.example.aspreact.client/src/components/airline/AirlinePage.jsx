@@ -86,6 +86,7 @@ export default function AirlinePage() {
                     <Column field="iata" header="IATA" filter sortable />
                     <Column field="icao" header="ICAO" filter sortable />
                     <Column field="numberCode" header="Number Code" filter sortable />
+                    <Column field="sortDestinationName" header="Default Baggage Sort Destination" filter sortable />
                 </DataTable>
             </Card>
 

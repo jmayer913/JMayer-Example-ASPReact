@@ -6,7 +6,7 @@ namespace JMayer.Example.ASPReact.Server.Flights;
 /// <summary>
 /// The class represents a flight in the flight schedule.
 /// </summary>
-public class Flight : UserEditableDataObject
+public class Flight : DataObject
 {
     /// <summary>
     /// The property gets/sets the IATA code for the airline for the flight.

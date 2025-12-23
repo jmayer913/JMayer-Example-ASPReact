@@ -38,6 +38,11 @@ public class AirlineEqualityComparerUnitTest
     private const string NumberCode = "999";
 
     /// <summary>
+    /// The constant for the sort destination ID.
+    /// </summary>
+    private const long SortDestinationID = 2;
+
+    /// <summary>
     /// The method verifies equality failure when two nulls are compared.
     /// </summary>
     [Fact]
@@ -149,10 +154,26 @@ public class AirlineEqualityComparerUnitTest
             LastEditedOn = DateTime.Now,
             Name = Name,
             NumberCode = NumberCode,
+            SortDestinationID = SortDestinationID,
         };
 
         Assert.False(new AirlineEqualityComparer().Equals(airline, null));
         Assert.False(new AirlineEqualityComparer().Equals(null, airline));
+    }
+
+    /// <summary>
+    /// The method verifies equality failure when the SortDestinationID property is different between the two objects.
+    /// </summary>
+    [Fact]
+    public void VerifyFailureSortDestinationID()
+    {
+        Airline airline1 = new()
+        {
+            SortDestinationID = SortDestinationID,
+        };
+        Airline airline2 = new();
+
+        Assert.False(new AirlineEqualityComparer().Equals(airline1, airline2));
     }
 
     /// <summary>
@@ -171,6 +192,7 @@ public class AirlineEqualityComparerUnitTest
             LastEditedOn = DateTime.Now,
             Name = Name,
             NumberCode = NumberCode,
+            SortDestinationID = SortDestinationID,
         };
         Airline airline2 = new(airline1);
 
@@ -194,6 +216,7 @@ public class AirlineEqualityComparerUnitTest
             LastEditedOn = DateTime.Now,
             Name = Name,
             NumberCode = NumberCode,
+            SortDestinationID = SortDestinationID,
         };
         Airline airline2 = new(airline1)
         {
@@ -220,6 +243,7 @@ public class AirlineEqualityComparerUnitTest
             LastEditedOn = DateTime.Now,
             Name = Name,
             NumberCode = NumberCode,
+            SortDestinationID = SortDestinationID,
         };
         Airline airline2 = new(airline1)
         {
@@ -246,6 +270,7 @@ public class AirlineEqualityComparerUnitTest
             LastEditedOn = DateTime.Now,
             Name = Name,
             NumberCode = NumberCode,
+            SortDestinationID = SortDestinationID,
         };
         Airline airline2 = new(airline1)
         {

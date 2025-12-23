@@ -43,7 +43,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
     /// <inheritdoc/>
     public bool Equals(Flight? x, Flight? y)
     {
-        if (x == null || y == null)
+        if (x is null || y is null)
         {
             return false;
         }
@@ -56,7 +56,7 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
         {
             for (int index = 0; index < x.CodeShares.Count; index++)
             {
-                if (new CodeShareEqualityComparer().Equals(x.CodeShares[index], y.CodeShares[index]) == false)
+                if (new CodeShareEqualityComparer().Equals(x.CodeShares[index], y.CodeShares[index]) is false)
                 {
                     return false;
                 }
@@ -72,7 +72,8 @@ public class FlightEqualityComparer : IEqualityComparer<Flight>
             && (_excludeID || x.Integer64ID == y.Integer64ID)
             && (_excludeLastEditedOn || x.LastEditedBy == y.LastEditedBy)
             && x.Name == y.Name
-            && x.Destination == y.Destination;
+            && x.Destination == y.Destination
+            && x.SortDestinationID == y.SortDestinationID;
     }
 
     /// <inheritdoc/>

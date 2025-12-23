@@ -43,6 +43,11 @@ public class FlightEqualityComparerUnitTest
     private const string Name = "A Name";
 
     /// <summary>
+    /// The constant for the sort destination ID.
+    /// </summary>
+    private const long SortDestinationID = 3;
+
+    /// <summary>
     /// The method verifies equality failure when the AirlineID property is different between the two objects.
     /// </summary>
     [Fact]
@@ -202,10 +207,26 @@ public class FlightEqualityComparerUnitTest
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
+            SortDestinationID = SortDestinationID,
         };
 
         Assert.False(new FlightEqualityComparer().Equals(flight, null));
         Assert.False(new FlightEqualityComparer().Equals(null, flight));
+    }
+
+    /// <summary>
+    /// The method verifies equality failure when the SortDestinationID property is different between the two objects.
+    /// </summary>
+    [Fact]
+    public void VerifyFailureSortDestinationID()
+    {
+        Flight flight1 = new()
+        {
+            SortDestinationID = SortDestinationID,
+        };
+        Flight flight2 = new();
+
+        Assert.False(new FlightEqualityComparer().Equals(flight1, flight2));
     }
 
     /// <summary>
@@ -227,6 +248,7 @@ public class FlightEqualityComparerUnitTest
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
+            SortDestinationID = SortDestinationID,
         };
         Flight flight2 = new(flight1);
 
@@ -253,6 +275,7 @@ public class FlightEqualityComparerUnitTest
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
+            SortDestinationID = SortDestinationID,
         };
         Flight flight2 = new(flight1)
         {
@@ -282,6 +305,7 @@ public class FlightEqualityComparerUnitTest
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
+            SortDestinationID = SortDestinationID,
         };
         Flight flight2 = new(flight1)
         {
@@ -311,6 +335,7 @@ public class FlightEqualityComparerUnitTest
             Integer64ID = ID,
             LastEditedOn = DateTime.Now,
             Name = Name,
+            SortDestinationID = SortDestinationID,
         };
         Flight flight2 = new(flight1)
         {

@@ -1,6 +1,7 @@
 ﻿using JMayer.Data.Data;
 using JMayer.Data.HTTP.DataLayer;
 using JMayer.Example.ASPReact.Server.Airlines;
+using JMayer.Example.ASPReact.Server.SortDestinations;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 
@@ -36,6 +37,11 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     private const string BadFormattedNumberCode = "9999";
 
     /// <summary>
+    /// The constant for a bad sort destination ID.
+    /// </summary>
+    private const long BadSortDestinationID = 99;
+
+    /// <summary>
     /// The constant for a default IATA code.
     /// </summary>
     private const string DefaultIATACode = "ZZ";
@@ -46,10 +52,29 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     private const string DefaultICAOCode = "ZZZ";
 
     /// <summary>
+    /// The constant for the default sort destination ID.
+    /// </summary>
+    private const long DefaultSortDestinationID = 1;
+
+    /// <summary>
     /// The dependency injection constructor.
     /// </summary>
     /// <param name="factory">The factory for the web application.</param>
     public AirlineWebRequestUnitTest(WebApplicationFactory<Program> factory) => _factory = factory;
+
+    /// <summary>
+    /// The method returns the sort destination.
+    /// </summary>
+    /// <param name="name">The name to search for.</param>
+    /// <returns>The sort destination or null if not found.</returns>
+    private async Task<SortDestination?> GetSortDestinationAsync(string name)
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        SortDestinations.SortDestinationDataLayer dataLayer = new(httpClient);
+
+        List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync();
+        return sortDestinations?.FirstOrDefault(obj => obj.Name == name);
+    }
 
     /// <summary>
     /// The method verifies the HTTP data layer can request an airline to be created by the server and the server can successfully process the request.
@@ -59,15 +84,23 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     /// <param name="iata">The IATA code assigned to the airline by the IATA Organization.</param>
     /// <param name="icao">The ICAO code assigned to the airline by the International Aviation Organization.</param>
     /// <param name="numberCode">The number code assigned to the airline by the IATA Organization.</param>
+    /// <param name="sortDestinationName">The default sort destination for the airline.</param>
     /// <returns>A Task object for the async.</returns>
     [Theory]
-    [InlineData("Alaska Airlines", "Alaska", "AS", "ASA", "027")]
-    [InlineData("Allegiant Air", "Allegiant", "G4", "AAY", "268")]
-    [InlineData("Jetblue Airways", "Jetblue", "B6", "JBU", "279")]
-    public async Task VerifyAddAirline(string name, string description, string iata, string icao, string numberCode)
+    [InlineData("Alaska Airlines", "Alaska", "AS", "ASA", "027", "MU1")]
+    [InlineData("Allegiant Air", "Allegiant", "G4", "AAY", "268", "MU2")]
+    [InlineData("Jetblue Airways", "Jetblue", "B6", "JBU", "279", "MU3")]
+    public async Task VerifyAddAirline(string name, string description, string iata, string icao, string numberCode, string sortDestinationName)
     {
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
+
+        SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
+
+        if (sortDestination is null)
+        {
+            Assert.Fail("Failed to retrieve the sort destination.");
+        }
 
         Airline airline = new()
         {
@@ -76,6 +109,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = icao,
             Name = name,
             NumberCode = numberCode,
+            SortDestinationID = sortDestination.Integer64ID,
+            SortDestinationName = sortDestination.Name ?? string.Empty,
         };
         OperationResult operationResult = await dataLayer.CreateAsync(airline);
 
@@ -100,6 +135,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = DefaultICAOCode,
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Bad IATA Code Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -111,13 +147,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.IATA), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.IATA));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.IATA)]);
+        Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ValidationErrors[nameof(Airline.IATA)][0]);
     }
 
     /// <summary>
@@ -136,6 +169,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = BadFormattedICAOCode,
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Bad ICAO Code Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -147,13 +181,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+        Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
     }
 
     /// <summary>
@@ -172,6 +203,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = DefaultICAOCode,
             NumberCode = BadFormattedNumberCode,
             Name = "Add Bad Number Code Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -183,13 +215,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The number code must be 3 digits.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+        Assert.Equal("The number code must be 3 digits.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
     }
 
     /// <summary>
@@ -208,13 +237,9 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = "ZZC",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate ICAO Test 1",
+            SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -222,6 +247,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = "ZZC",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate ICAO Test New",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -233,13 +259,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("ICAO must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+        Assert.Equal("The ICAO must be unique.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
     }
 
     /// <summary>
@@ -258,13 +281,9 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = "ZZA",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate Name Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -272,6 +291,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = "ZZB",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate Name Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -283,13 +303,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("name already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.Name), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.Name));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.Name)]);
+        Assert.Equal("The Add Duplicate Name Test name already exists in the data store.", operationResult.ValidationErrors[nameof(Airline.Name)][0]);
     }
 
     /// <summary>
@@ -308,13 +325,9 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = "ZZD",
             NumberCode = "999",
             Name = "Add Duplicate Number Code Test 1",
+            SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -322,6 +335,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = "ZZE",
             NumberCode = "999",
             Name = "Add Duplicate Number Code Test New",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         //The operation must have failed.
@@ -333,13 +347,44 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
+        //The correct error was returned.
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+        Assert.Equal("The number code must be unique unless the code is 000.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the sort destination ID doesn't exist when adding a new airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyAddAirlineSortDestinationNotFoundFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZF",
+            ICAO = "ZZF",
+            NumberCode = "999",
+            Name = "Add Airline Sort Destination Not Found Test",
+            SortDestinationID = BadSortDestinationID,
+        });
+
+        //The operation must have failed.
+        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+        //No airline was returned.
+        Assert.Null(operationResult.DataObject);
+
+        //A bad request status was returned.
+        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
         //The correct error was returned.
-        Assert.Contains("number code must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.SortDestinationID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Airline.SortDestinationID)]);
+        Assert.Equal($"The {BadSortDestinationID} sort destination was not found in the data store.", operationResult.ValidationErrors[nameof(Airline.SortDestinationID)][0]);
     }
 
     /// <summary>
@@ -368,13 +413,14 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZF",
-            ICAO = "ZZF",
+            IATA = "ZG",
+            ICAO = "ZZG",
             Name = "Delete Airline Test",
             NumberCode = Airline.ZeroNumberCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             operationResult = await dataLayer.DeleteAsync(airline);
             Assert.True(operationResult.IsSuccessStatusCode);
@@ -445,14 +491,15 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         Airline airline = new()
         {
-            IATA = "ZG",
-            ICAO = "ZZG",
+            IATA = "ZH",
+            ICAO = "ZZH",
             Name = "Get Single Airline Test",
             NumberCode = Airline.ZeroNumberCode,
+            SortDestinationID = DefaultSortDestinationID,
         };
         OperationResult operationResult = await dataLayer.CreateAsync(airline);
 
-        if (operationResult.DataObject is Airline createdAirline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline createdAirline)
         {
             Airline? verifyAirline = await dataLayer.GetSingleAsync(createdAirline.Integer64ID);
             Assert.NotNull(verifyAirline);
@@ -476,15 +523,23 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     /// <param name="newIcao">The new ICAO code assigned to the airline by the International Aviation Organization.</param>
     /// <param name="originalNumberCode">The orginal number code assigned to the airline by the IATA Organization.</param>
     /// <param name="newNumberCode">The new number code assigned to the airline by the IATA Organization.</param>
+    /// <param name="sortDestinationName">The default sort destination for the airline.</param>
     /// <returns>A Task object for the async.</returns>
     [Theory]
-    [InlineData("Air Canada", "Spirit Airlines", "Canada", "Spirit", "AC", "NK", "ACA", "NKS", "014", "487")]
-    [InlineData("British Airways", "Silver Airways", "British", "Silver", "BA", "3M", "BAW", "SIL", "125", "449")]
-    [InlineData("Flair Airlines", "Frontier Airlines", "Flair", "Frontier", "F8", "F9", "FLE", "FFT", "418", "422")]
-    public async Task VerifyUpdateAirline(string originalName, string newName, string originalDescription, string newDescription, string originalIata, string newIata, string originalIcao, string newIcao, string originalNumberCode, string newNumberCode)
+    [InlineData("Air Canada", "Spirit Airlines", "Canada", "Spirit", "AC", "NK", "ACA", "NKS", "014", "487", "MU2")]
+    [InlineData("British Airways", "Silver Airways", "British", "Silver", "BA", "3M", "BAW", "SIL", "125", "449", "MU3")]
+    [InlineData("Flair Airlines", "Frontier Airlines", "Flair", "Frontier", "F8", "F9", "FLE", "FFT", "418", "422", "MU4")]
+    public async Task VerifyUpdateAirline(string originalName, string newName, string originalDescription, string newDescription, string originalIata, string newIata, string originalIcao, string newIcao, string originalNumberCode, string newNumberCode, string sortDestinationName)
     {
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
+
+        SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
+
+        if (sortDestination is null)
+        {
+            Assert.Fail("Failed to retrieve the sort destination.");
+        }
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
@@ -493,6 +548,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             ICAO = originalIcao,
             Name = originalName,
             NumberCode = originalNumberCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline createdAirline)
@@ -504,6 +560,8 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
                 ICAO = newIcao,
                 Name = newName,
                 NumberCode = newNumberCode,
+                SortDestinationID = sortDestination.Integer64ID,
+                SortDestinationName = sortDestination.Name ?? string.Empty,
             };
             operationResult = await dataLayer.UpdateAsync(updatedAirline);
 
@@ -529,13 +587,14 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZH",
-            ICAO = "ZZH",
+            IATA = "ZI",
+            ICAO = "ZZI",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Bad IATA Code Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.IATA = BadFormattedIATACode;
             operationResult = await dataLayer.UpdateAsync(airline);
@@ -549,13 +608,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.IATA), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.IATA));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.IATA)]);
+            Assert.Equal("The IATA must be 2 alphanumeric characters; letters must be capitalized.", operationResult.ValidationErrors[nameof(Airline.IATA)][0]);
         }
         else
         {
@@ -575,13 +631,14 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZI",
-            ICAO = "ZZI",
+            IATA = "ZJ",
+            ICAO = "ZZJ",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Bad ICAO Code Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.ICAO = BadFormattedICAOCode;
             operationResult = await dataLayer.UpdateAsync(airline);
@@ -595,13 +652,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+            Assert.Equal("The ICAO must be 3 capital letters.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
         }
         else
         {
@@ -621,13 +675,14 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZJ",
-            ICAO = "ZZJ",
+            IATA = "ZK",
+            ICAO = "ZZK",
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Bad Number Code Test",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Airline airline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.NumberCode = BadFormattedNumberCode;
             operationResult = await dataLayer.UpdateAsync(airline);
@@ -641,13 +696,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The number code must be 3 digits.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+            Assert.Equal("The number code must be 3 digits.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
         }
         else
         {
@@ -667,13 +719,14 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZK",
-            ICAO = "ZZK",
+            IATA = "ZL",
+            ICAO = "ZZL",
             Name = "Old Data Airline Test",
             NumberCode = Airline.ZeroNumberCode,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Airline firstAirline)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline firstAirline)
         {
             Airline secondAirline = new(firstAirline);
 
@@ -700,11 +753,11 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     /// <summary>
-    /// The method verifies the server will return a failure if the airline ICAO already exists when adding updating an airline.
+    /// The method verifies the server will return a failure if the sort destination ID doesn't exist when adding a new airline.
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
-    public async Task VerifyUpdateDuplicateAirlineICAOFailure()
+    public async Task VerifyUpdateAirlineSortDestinationNotFoundFailure()
     {
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
@@ -713,27 +766,14 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         {
             IATA = "ZM",
             ICAO = "ZZM",
+            Name = "Update Airline Sort Destination Not Found Test",
             NumberCode = Airline.ZeroNumberCode,
-            Name = "Update Duplicate ICAO Test 1",
-        });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
-
-        operationResult = await dataLayer.CreateAsync(new Airline()
-        {
-            IATA = "ZN",
-            ICAO = "ZZN",
-            NumberCode = Airline.ZeroNumberCode,
-            Name = "Update Duplicate ICAO Test 2",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
-            airline.ICAO = "ZZM";
+            airline.SortDestinationID = BadSortDestinationID;
             operationResult = await dataLayer.UpdateAsync(airline);
 
             //The operation must have failed.
@@ -745,13 +785,64 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
+            //The correct error was returned.
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.SortDestinationID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.SortDestinationID)]);
+            Assert.Equal($"The {BadSortDestinationID} sort destination was not found in the data store.", operationResult.ValidationErrors[nameof(Airline.SortDestinationID)][0]);
+        }
+        else
+        {
+            Assert.Fail("Failed to create the airline.");
+        }
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline ICAO already exists when adding updating an airline.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyUpdateDuplicateAirlineICAOFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        AirlineDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZN",
+            ICAO = "ZZN",
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Update Duplicate ICAO Test 1",
+            SortDestinationID = DefaultSortDestinationID,
+        });
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
+
+        operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZO",
+            ICAO = "ZZO",
+            NumberCode = Airline.ZeroNumberCode,
+            Name = "Update Duplicate ICAO Test 2",
+            SortDestinationID = DefaultSortDestinationID,
+        });
+
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
+        {
+            airline.ICAO = "ZZN";
+            operationResult = await dataLayer.UpdateAsync(airline);
+
+            //The operation must have failed.
+            Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+            //No airline was returned.
+            Assert.Null(operationResult.DataObject);
+
+            //A bad request status was returned.
+            Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
             //The correct error was returned.
-            Assert.Contains("ICAO must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.ICAO), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.ICAO));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.ICAO)]);
+            Assert.Equal("The ICAO must be unique.", operationResult.ValidationErrors[nameof(Airline.ICAO)][0]);
         }
         else
         {
@@ -771,24 +862,21 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZO",
-            ICAO = "ZZO",
-            NumberCode = Airline.ZeroNumberCode,
-            Name = "Update Duplicate Name Test 1",
-        });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
-
-        operationResult = await dataLayer.CreateAsync(new Airline()
-        {
             IATA = "ZP",
             ICAO = "ZZP",
             NumberCode = Airline.ZeroNumberCode,
+            Name = "Update Duplicate Name Test 1",
+            SortDestinationID = DefaultSortDestinationID,
+        });
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
+
+        operationResult = await dataLayer.CreateAsync(new Airline()
+        {
+            IATA = "ZQ",
+            ICAO = "ZZQ",
+            NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate Name Test 2",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
@@ -805,13 +893,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("name already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.Name), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.Name));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.Name)]);
+            Assert.Equal($"The {airline.Name} name already exists in the data store.", operationResult.ValidationErrors[nameof(Airline.Name)][0]);
         }
         else
         {
@@ -831,24 +916,21 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZQ",
-            ICAO = "ZZQ",
+            IATA = "ZR",
+            ICAO = "ZZR",
             NumberCode = "997",
             Name = "Update Duplicate Number Code Test Test 1",
+            SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first airline.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
         {
-            IATA = "ZR",
-            ICAO = "ZZR",
+            IATA = "ZS",
+            ICAO = "ZZS",
             NumberCode = "998",
             Name = "Update Duplicate Number Code Test 2",
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
@@ -865,13 +947,10 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("number code must be unique", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Airline.NumberCode), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Airline.NumberCode));
+            Assert.Single(operationResult.ValidationErrors[nameof(Airline.NumberCode)]);
+            Assert.Equal("The number code must be unique unless the code is 000.", operationResult.ValidationErrors[nameof(Airline.NumberCode)][0]);
         }
         else
         {

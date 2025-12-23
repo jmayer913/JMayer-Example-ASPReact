@@ -47,7 +47,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
 
         //No gate or server side validation result was returned.
         Assert.Null(operationResult.DataObject);
-        Assert.Null(operationResult.ServerSideValidationResult);
+        Assert.Empty(operationResult.ValidationErrors);
 
         //A method not allowed status was returned.
         Assert.Equal(HttpStatusCode.MethodNotAllowed, operationResult.StatusCode);
@@ -83,7 +83,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
 
         //No gate or server side validation result was returned.
         Assert.Null(operationResult.DataObject);
-        Assert.Null(operationResult.ServerSideValidationResult);
+        Assert.Empty(operationResult.ValidationErrors);
 
         //A method not allowed status was returned.
         Assert.Equal(HttpStatusCode.MethodNotAllowed, operationResult.StatusCode);
@@ -167,7 +167,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
 
         //No gate or server side validation result was returned.
         Assert.Null(operationResult.DataObject);
-        Assert.Null(operationResult.ServerSideValidationResult);
+        Assert.Empty(operationResult.ValidationErrors);
 
         //A method not allowed status was returned.
         Assert.Equal(HttpStatusCode.MethodNotAllowed, operationResult.StatusCode);

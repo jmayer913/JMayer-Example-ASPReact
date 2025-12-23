@@ -1,12 +1,18 @@
 ﻿using JMayer.Data.Data;
+using System.ComponentModel.DataAnnotations;
 
 namespace JMayer.Example.ASPReact.Server.SortDestinations;
 
 /// <summary>
 /// The class represents a sort destination in the baggage handling system.
 /// </summary>
-public class SortDestination : UserEditableDataObject
+public class SortDestination : DataObject
 {
+    /// <inheritdoc/>
+    /// <remarks>Overridden to add Required data annotation.</remarks>
+    [Required]
+    public override string? Name { get => base.Name; set => base.Name = value; }
+
     /// <summary>
     /// The default constructor.
     /// </summary>

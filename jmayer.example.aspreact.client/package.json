@@ -1,7 +1,7 @@
 {
   "name": "jmayer.example.aspreact.client",
   "private": true,
-  "version": "0.0.0",
+  "version": "9.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

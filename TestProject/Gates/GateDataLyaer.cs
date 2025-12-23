@@ -6,7 +6,7 @@ namespace TestProject.Gates;
 /// <summary>
 /// The class manages CRUD interactions with a remote server for an airline.
 /// </summary>
-internal class GateDataLyaer : UserEditableDataLayer<Gate>
+internal class GateDataLyaer : StandardCRUDDataLayer<Gate>
 {
     /// <inheritdoc/>
     public GateDataLyaer(HttpClient httpClient) : base(httpClient) { }

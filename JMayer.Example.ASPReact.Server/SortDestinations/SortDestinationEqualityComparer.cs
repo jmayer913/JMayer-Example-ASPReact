@@ -43,7 +43,7 @@ public class SortDestinationEqualityComparer : IEqualityComparer<SortDestination
     /// <inheritdoc/>
     public bool Equals(SortDestination? x, SortDestination? y)
     {
-        if (x == null || y == null)
+        if (x is null || y is null)
         {
             return false;
         }

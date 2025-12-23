@@ -169,6 +169,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         {
             IATA = iata,
             Name = iata,
+            SortDestinationID = DefaultSortDestinationID,
         });
 
         return operationResult.DataObject as Airline;
@@ -181,27 +182,28 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// <returns>A list of CodeShare objects.</returns>
     private async Task<List<CodeShare>> CreateCodeSharesAsync(string? codeshareCommaSeparatedList)
     {
-        List<CodeShare> codeshares = [];
-
-        if (codeshareCommaSeparatedList != null)
+        if (codeshareCommaSeparatedList is null)
         {
-            string[] splitCodeShares = codeshareCommaSeparatedList.Split([','], StringSplitOptions.RemoveEmptyEntries);
+            return [];
+        }
 
-            foreach (var codeshareString in splitCodeShares)
+        List<CodeShare> codeshares = [];
+        string[] splitCodeShares = codeshareCommaSeparatedList.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var codeshareString in splitCodeShares)
+        {
+            string airlineIATACode = codeshareString.Substring(0, 2);
+            string flightNumber = codeshareString.Substring(2);
+
+            Airline? airline = await GetAirlineByIATAAsync(airlineIATACode);
+
+            if (airline is not null)
             {
-                string airlineIATACode = codeshareString.Substring(0, 2);
-                string flightNumber = codeshareString.Substring(2);
-
-                Airline? airline = await GetAirlineByIATAAsync(airlineIATACode);
-
-                if (airline != null)
+                codeshares.Add(new CodeShare()
                 {
-                    codeshares.Add(new CodeShare()
-                    {
-                        AirlineID = airline.Integer64ID,
-                        FlightNumber = flightNumber,
-                    });
-                }
+                    AirlineID = airline.Integer64ID,
+                    FlightNumber = flightNumber,
+                });
             }
         }
 
@@ -219,7 +221,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         Airlines.AirlineDataLayer dataLayer = new(httpClient);
 
         List<Airline>? airlines = await dataLayer.GetAllAsync();
-
         return airlines?.FirstOrDefault(obj => obj.IATA == iata);
     }
 
@@ -234,7 +235,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         GateDataLyaer dataLayer = new(httpClient);
 
         List<Gate>? gates = await dataLayer.GetAllAsync();
-
         return gates?.FirstOrDefault(obj => obj.Name == name);
     }
 
@@ -249,8 +249,151 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         SortDestinations.SortDestinationDataLayer dataLayer = new(httpClient);
 
         List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync();
-
         return sortDestinations?.FirstOrDefault(obj => obj.Name == name);
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the flight already exists when adding a new flight.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyAddDuplicateFlightFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        FlightDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
+        {
+            AirlineID = DefaultAirlineID,
+            DepartTime = DateTime.Now.TimeOfDay,
+            FlightNumber = FlightNumberAddTestDuplicate,
+            GateID = DefaultGateID,
+            Name = "Add Duplicate Flight Test 1",
+            Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
+        });
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first flight.");
+
+        operationResult = await dataLayer.CreateAsync(new Flight()
+        {
+            AirlineID = DefaultAirlineID,
+            DepartTime = DateTime.Now.TimeOfDay,
+            FlightNumber = FlightNumberAddTestDuplicate,
+            GateID = DefaultGateID,
+            Name = "Add Duplicate Flight Test New",
+            Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
+        });
+
+        //The operation must have failed.
+        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+        //No airline was returned.
+        Assert.Null(operationResult.DataObject);
+
+        //A bad request status was returned.
+        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+        //The correct error was returned.
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+        Assert.Equal("The flight already exists in the schedule.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
+    }
+
+    /// <summary>
+    /// The method verifies the HTTP data layer can request a flight to be created by the server and the server can successfully process the request.
+    /// </summary>
+    /// <param name="gateName">The name of the gate.</param>
+    /// <param name="airlineIATA">The IATA code for the airline.</param>
+    /// <param name="flightNumber">The identifier for the flight.</param>
+    /// <param name="destination">The destination for the flight.</param>
+    /// <param name="codeshareCommaSeparatedList">A comma separated list of codeshares; each element will be the airline's IATA concatenated with the flight number used by the airline.</param>
+    /// <param name="sortDestinationName">The name of the sort destination.</param>
+    /// <returns>A Task object for the async.</returns>
+    [Theory]
+    [InlineData("A1", "AA", "3124", "ZZZ", null, "MU1")]
+    [InlineData("B1", "DL", "3985", "ZZZ", "AA0235", "MU2")]
+    [InlineData("C1", "WN", "3985", "ZZZ", "AA9382,DL8274", "MU3")]
+    public async Task VerifyAddFlight(string gateName, string airlineIATA, string flightNumber, string destination, string? codeshareCommaSeparatedList, string sortDestinationName)
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        FlightDataLayer dataLayer = new(httpClient);
+
+        Gate? gate = await GetGateAsync(gateName);
+
+        if (gate is null)
+        {
+            Assert.Fail("Failed to retrieve the gate.");
+        }
+        
+        Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
+
+        if (airline is null)
+        {
+            Assert.Fail("Failed to retrieve the airline.");
+        }
+
+        SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
+
+        if (sortDestination is null)
+        {
+            Assert.Fail("Failed to retrieve the sort destination.");
+        }
+
+        List<CodeShare> codeshares = await CreateCodeSharesAsync(codeshareCommaSeparatedList);
+
+        Flight flight = new()
+        {
+            AirlineID = airline.Integer64ID,
+            CodeShares = codeshares,
+            DepartTime = DateTime.Now.TimeOfDay,
+            FlightNumber = flightNumber,
+            GateID = gate.Integer64ID,
+            Name = $"{airline.IATA}{flightNumber}",
+            Destination = destination,
+            SortDestinationID = sortDestination.Integer64ID,
+        };
+        OperationResult operationResult = await dataLayer.CreateAsync(flight);
+
+        Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
+        Assert.IsType<Flight>(operationResult.DataObject); //A flight must have been returned.
+        Assert.True(new FlightEqualityComparer(true, true, true).Equals((Flight)operationResult.DataObject, flight), "The data object sent should be the same as the data object returned."); //Original and return must be equal.
+    }
+
+    /// <summary>
+    /// The method verifies the server will return a failure if the airline ID doesn't exist when adding a new flight.
+    /// </summary>
+    /// <returns>A Task object for the async.</returns>
+    [Fact]
+    public async Task VerifyAddFlightAirlineNotFoundFailure()
+    {
+        HttpClient httpClient = _factory.CreateClient();
+        FlightDataLayer dataLayer = new(httpClient);
+
+        OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
+        {
+            AirlineID = BadAirlineID,
+            DepartTime = DateTime.Now.TimeOfDay,
+            FlightNumber = FlightNumberAddTestAirlineNotFound,
+            GateID = DefaultGateID,
+            Name = "Add Flight Airline Not Found Test",
+            Destination = DefaultAirportCode,
+            SortDestinationID = DefaultSortDestinationID,
+        });
+
+        //The operation must have failed.
+        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
+
+        //No airline was returned.
+        Assert.Null(operationResult.DataObject);
+
+        //A bad request status was returned.
+        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
+
+        //The correct error was returned.
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+        Assert.Equal($"The {BadAirlineID} airline was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
     }
 
     /// <summary>
@@ -283,13 +426,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The city must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.Destination), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.Destination));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.Destination)]);
+        Assert.Equal("The city must be 3 capital letters.", operationResult.ValidationErrors[nameof(Flight.Destination)][0]);
     }
 
     /// <summary>
@@ -322,171 +462,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
-    }
-
-    /// <summary>
-    /// The method verifies the server will return a failure if the flight already exists when adding a new flight.
-    /// </summary>
-    /// <returns>A Task object for the async.</returns>
-    [Fact]
-    public async Task VerifyAddDuplicateFlightFailure()
-    {
-        HttpClient httpClient = _factory.CreateClient();
-        FlightDataLayer dataLayer = new(httpClient);
-
-        OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
-        {
-            AirlineID = DefaultAirlineID,
-            DepartTime = DateTime.Now.TimeOfDay,
-            FlightNumber = FlightNumberAddTestDuplicate,
-            GateID = DefaultGateID,
-            Name = "Add Duplicate Flight Test 1",
-            Destination = DefaultAirportCode,
-            SortDestinationID = DefaultSortDestinationID,
-        });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first flight.");
-            return;
-        }
-
-        operationResult = await dataLayer.CreateAsync(new Flight()
-        {
-            AirlineID = DefaultAirlineID,
-            DepartTime = DateTime.Now.TimeOfDay,
-            FlightNumber = FlightNumberAddTestDuplicate,
-            GateID = DefaultGateID,
-            Name = "Add Duplicate Flight Test New",
-            Destination = DefaultAirportCode,
-            SortDestinationID = DefaultSortDestinationID,
-        });
-
-        //The operation must have failed.
-        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
-
-        //No airline was returned.
-        Assert.Null(operationResult.DataObject);
-
-        //A bad request status was returned.
-        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
-
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
-        //The correct error was returned.
-        Assert.Contains("flight already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
-    }
-
-    /// <summary>
-    /// The method verifies the HTTP data layer can request a flight to be created by the server and the server can successfully process the request.
-    /// </summary>
-    /// <param name="gateName">The name of the gate.</param>
-    /// <param name="airlineIATA">The IATA code for the airline.</param>
-    /// <param name="flightNumber">The identifier for the flight.</param>
-    /// <param name="destination">The destination for the flight.</param>
-    /// <param name="codeshareCommaSeparatedList">A comma separated list of codeshares; each element will be the airline's IATA concatenated with the flight number used by the airline.</param>
-    /// <param name="sortDestinationName">The name of the sort destination.</param>
-    /// <returns>A Task object for the async.</returns>
-    [Theory]
-    [InlineData("A1", "AA", "3124", "ZZZ", null, "MU1")]
-    [InlineData("B1", "DL", "3985", "ZZZ", "AA0235", "MU2")]
-    [InlineData("C1", "WN", "3985", "ZZZ", "AA9382,DL8274", "MU3")]
-    public async Task VerifyAddFlight(string gateName, string airlineIATA, string flightNumber, string destination, string? codeshareCommaSeparatedList, string sortDestinationName)
-    {
-        HttpClient httpClient = _factory.CreateClient();
-        FlightDataLayer dataLayer = new(httpClient);
-
-        Gate? gate = await GetGateAsync(gateName);
-
-        if (gate == null)
-        {
-            Assert.Fail("Failed to retrieve the gate.");
-            return;
-        }
-        
-        Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
-
-        if (airline == null)
-        {
-            Assert.Fail("Failed to retrieve the airline.");
-            return;
-        }
-
-        SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
-
-        if (sortDestination == null)
-        {
-            Assert.Fail("Failed to retrieve the sort destination.");
-            return;
-        }
-
-        List<CodeShare> codeshares = await CreateCodeSharesAsync(codeshareCommaSeparatedList);
-
-        Flight flight = new()
-        {
-            AirlineID = airline.Integer64ID,
-            CodeShares = codeshares,
-            DepartTime = DateTime.Now.TimeOfDay,
-            FlightNumber = flightNumber,
-            GateID = gate.Integer64ID,
-            Name = $"{airline.IATA}{flightNumber}",
-            Destination = destination,
-            SortDestinationID = sortDestination.Integer64ID,
-        };
-        OperationResult operationResult = await dataLayer.CreateAsync(flight);
-
-        Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
-        Assert.IsType<Flight>(operationResult.DataObject); //A flight must have been returned.
-        Assert.True(new FlightEqualityComparer(true, true, true).Equals((Flight)operationResult.DataObject, flight), "The data object sent should be the same as the data object returned."); //Original and return must be equal.
-    }
-
-    /// <summary>
-    /// The method verifies the server will return a failure if the airline ID doesn't exist when adding a new flight.
-    /// </summary>
-    /// <returns>A Task object for the async.</returns>
-    [Fact]
-    public async Task VerifyAddFlightFailureAirlineNotFound()
-    {
-        HttpClient httpClient = _factory.CreateClient();
-        FlightDataLayer dataLayer = new(httpClient);
-
-        OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
-        {
-            AirlineID = BadAirlineID,
-            DepartTime = DateTime.Now.TimeOfDay,
-            FlightNumber = FlightNumberAddTestAirlineNotFound,
-            GateID = DefaultGateID,
-            Name = "Add Flight Airline Not Found Test",
-            Destination = DefaultAirportCode,
-            SortDestinationID = DefaultSortDestinationID,
-        });
-
-        //The operation must have failed.
-        Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
-
-        //No airline was returned.
-        Assert.Null(operationResult.DataObject);
-
-        //A bad request status was returned.
-        Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
-
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
-        //The correct error was returned.
-        Assert.Contains("airline was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+        Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
     }
 
     /// <summary>
@@ -494,7 +473,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
-    public async Task VerifyAddFlightFailureCodeShareAirlineNotFound()
+    public async Task VerifyAddFlightCodeShareAirlineNotFoundFailure()
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
@@ -520,13 +499,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("airline for the codeshare was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(CodeShare.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+        Assert.Equal($"The {BadAirlineID} airline for the codeshare was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
     }
 
     /// <summary>
@@ -534,7 +510,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
-    public async Task VerifyAddFlightFailureGateNotFound()
+    public async Task VerifyAddFlightGateNotFoundFailure()
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
@@ -559,13 +535,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("gate was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.GateID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.GateID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.GateID)]);
+        Assert.Equal($"The {BadGateID} gate was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.GateID)][0]);
     }
 
     /// <summary>
@@ -573,7 +546,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     /// </summary>
     /// <returns>A Task object for the async.</returns>
     [Fact]
-    public async Task VerifyAddFlightFailureSortDestinationNotFound()
+    public async Task VerifyAddFlightSortDestinationNotFoundFailure()
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
@@ -598,13 +571,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         //A bad request status was returned.
         Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-        //A validation error was returned.
-        Assert.NotNull(operationResult.ServerSideValidationResult);
-        Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
         //The correct error was returned.
-        Assert.Contains("sort destination was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-        Assert.Equal(nameof(Flight.SortDestinationID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+        Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.SortDestinationID));
+        Assert.Single(operationResult.ValidationErrors[nameof(Flight.SortDestinationID)]);
+        Assert.Equal($"The {BadSortDestinationID} sort destination was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.SortDestinationID)][0]);
     }
 
     /// <summary>
@@ -633,10 +603,9 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
 
         Airline? airline = await CreateAirlineAsync(AirlineCascadeDelete);
 
-        if (airline == null)
+        if (airline is null)
         {
             Assert.Fail("Failed to create the airline.");
-            return;
         }
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
@@ -649,26 +618,20 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
         });
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the flight.");
 
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the flight.");
-            return;
-        }
-
-        await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline);
+        operationResult = await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline);
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to delete the airline.");
 
         List<Flight>? flights = await dataLayer.GetAllAsync();
 
-        if (flights == null)
+        if (flights is null)
         {
             Assert.Fail("Failed to query the flights.");
         }
-        else
-        {
-            flights = flights.Where(obj => obj.AirlineID == airline.Integer64ID).ToList();
-            Assert.Empty(flights);
-        }
+        
+        flights = [.. flights.Where(obj => obj.AirlineID == airline.Integer64ID)];
+        Assert.Empty(flights);
     }
 
     /// <summary>
@@ -692,7 +655,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Flight flight)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             operationResult = await dataLayer.DeleteAsync(flight);
             Assert.True(operationResult.IsSuccessStatusCode);
@@ -712,7 +675,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
-
         List<Flight>? flights = await dataLayer.GetAllAsync();
 
         //Flights must have been returned.
@@ -729,7 +691,6 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
-
         List<ListView>? flights = await dataLayer.GetAllListViewAsync();
 
         //List view flights must have been returned.
@@ -785,12 +746,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
         });
-
-        if (!operationResult.IsSuccessStatusCode)
-        {
-            Assert.Fail("Failed to create the first flight.");
-            return;
-        }
+        Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first flight.");
 
         operationResult = await dataLayer.CreateAsync(new Flight()
         {
@@ -826,13 +782,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("flight already exists", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+            Assert.Equal("The flight already exists in the schedule.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
         }
         else
         {
@@ -861,26 +814,23 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
 
         Gate? gate = await GetGateAsync(gateName);
 
-        if (gate == null)
+        if (gate is null)
         {
             Assert.Fail("Failed to retrieve the gate.");
-            return;
         }
 
         Airline? airline = await GetAirlineByIATAAsync(airlineIATA);
 
-        if (airline == null)
+        if (airline is null)
         {
             Assert.Fail("Failed to retrieve the airline.");
-            return;
         }
 
         SortDestination? sortDestination = await GetSortDestinationAsync(sortDestinationName);
 
-        if (sortDestination == null)
+        if (sortDestination is null)
         {
             Assert.Fail("Failed to retrieve the sort destination.");
-            return;
         }
 
         OperationResult operationResult = await dataLayer.CreateAsync(new Flight()
@@ -966,13 +916,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("airline was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+            Assert.Equal($"The {BadAirlineID} airline was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
         }
         else
         {
@@ -1001,7 +948,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Flight flight)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             flight.Destination = BadFormatttedDestination;
             operationResult = await dataLayer.UpdateAsync(flight);
@@ -1015,13 +962,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The city must be 3 capital letters.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.Destination), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.Destination));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.Destination)]);
+            Assert.Equal("The city must be 3 capital letters.", operationResult.ValidationErrors[nameof(Flight.Destination)][0]);
         }
         else
         {
@@ -1050,7 +994,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             SortDestinationID = DefaultSortDestinationID,
         });
 
-        if (operationResult.DataObject is Flight flight)
+        if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             flight.FlightNumber = BadFormatttedFlightNumber;
             operationResult = await dataLayer.UpdateAsync(flight);
@@ -1064,13 +1008,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.FlightNumber), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.FlightNumber));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.FlightNumber)]);
+            Assert.Equal("The flight number must be 4 digits or 4 digits and a capital letter.", operationResult.ValidationErrors[nameof(Flight.FlightNumber)][0]);
         }
         else
         {
@@ -1123,13 +1064,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("airline for the codeshare was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(CodeShare.AirlineID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.AirlineID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.AirlineID)]);
+            Assert.Equal($"The {BadAirlineID} airline for the codeshare was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.AirlineID)][0]);
         }
         else
         {
@@ -1181,13 +1119,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("gate was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.GateID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.GateID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.GateID)]);
+            Assert.Equal($"The {BadGateID} gate was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.GateID)][0]);
         }
         else
         {
@@ -1239,13 +1174,10 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             //A bad request status was returned.
             Assert.Equal(HttpStatusCode.BadRequest, operationResult.StatusCode);
 
-            //A validation error was returned.
-            Assert.NotNull(operationResult.ServerSideValidationResult);
-            Assert.Single(operationResult.ServerSideValidationResult.Errors);
-
             //The correct error was returned.
-            Assert.Contains("sort destination was not found", operationResult.ServerSideValidationResult.Errors[0].ErrorMessage);
-            Assert.Equal(nameof(Flight.SortDestinationID), operationResult.ServerSideValidationResult.Errors[0].PropertyName);
+            Assert.Contains(operationResult.ValidationErrors, obj => obj.Key == nameof(Flight.SortDestinationID));
+            Assert.Single(operationResult.ValidationErrors[nameof(Flight.SortDestinationID)]);
+            Assert.Equal($"The {BadSortDestinationID} sort destination was not found in the data store.", operationResult.ValidationErrors[nameof(Flight.SortDestinationID)][0]);
         }
         else
         {

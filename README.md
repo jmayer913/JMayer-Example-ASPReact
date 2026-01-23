@@ -48,6 +48,8 @@ On the flight schedule page, the user can create a new flight or edit an existin
 * Depart Time - The schedule time the plane will depart from the gate; required.
 * Sort Destination - The sort destination bags will be sorted too for the flight; required.
 
+If the flight's airline, flight number and destination match another flight, the add or edit will be rejected by the server.
+
 <img width="404" alt="image" src="https://github.com/user-attachments/assets/cd3dbf00-6797-4f05-b683-7fe5b8e49294" />
 
 <img width="401" alt="image" src="https://github.com/user-attachments/assets/9953df72-ecef-45fb-9821-95964a7e45ba" />

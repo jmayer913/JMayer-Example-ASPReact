@@ -28,7 +28,7 @@ On the airlines page, the user can create a new airline or edit an existing airl
 
 ### Delete
 
-On the airlines page, the user can delete an airline. The user will be required to confirm the deletion or cancel. On confirmation, the airline will be deleted.
+On the airlines page, the user can delete an airline. The user will be required to confirm the deletion or cancel. On confirmation, the airline and its associated flights will be deleted.
 
 <img width="413" alt="image" src="https://github.com/user-attachments/assets/de48d6ec-4046-44fa-850c-298005312601" />
 
@@ -47,6 +47,8 @@ On the flight schedule page, the user can create a new flight or edit an existin
 * Destination - The next destination for the flight; required and must be 3 letters.
 * Depart Time - The schedule time the plane will depart from the gate; required.
 * Sort Destination - The sort destination bags will be sorted too for the flight; required.
+
+If the flight's airline, flight number and destination match another flight, the add or edit will be rejected by the server.
 
 <img width="404" alt="image" src="https://github.com/user-attachments/assets/cd3dbf00-6797-4f05-b683-7fe5b8e49294" />
 

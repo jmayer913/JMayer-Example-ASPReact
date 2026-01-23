@@ -28,7 +28,7 @@ On the airlines page, the user can create a new airline or edit an existing airl
 
 ### Delete
 
-On the airlines page, the user can delete an airline. The user will be required to confirm the deletion or cancel. On confirmation, the airline will be deleted.
+On the airlines page, the user can delete an airline. The user will be required to confirm the deletion or cancel. On confirmation, the airline and its associated flights will be deleted.
 
 <img width="413" alt="image" src="https://github.com/user-attachments/assets/de48d6ec-4046-44fa-850c-298005312601" />
 

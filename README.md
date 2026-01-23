@@ -62,7 +62,7 @@ On the flight schedule page, the user can delete a flight. The user will be requ
 
 ## Edit Conflict
 
-When two users are editing an airline or flight at the same time, whoever submits first will win; the other user will be told to try again.
+When two users are editing the same airline or flight at the same time, whoever submits first will win; the other user will be told to try again.
 
 <img width="400" height="188" alt="image" src="https://github.com/user-attachments/assets/f5c7e697-7ba7-4177-bd40-4be5d3a03a95" />
 

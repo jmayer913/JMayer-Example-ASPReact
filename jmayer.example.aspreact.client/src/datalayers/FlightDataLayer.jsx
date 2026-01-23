@@ -27,6 +27,12 @@ export function useFlightDataLayer() {
     const [updateFlightSuccess, setUpdateFlightSuccess] = useState(false);
     const [updateFlightValidationProblemDetails, setUpdateFlightValidationProblemDetails] = useState(null);
 
+    //Constants for the status codes returned by the server.
+    const BadRequestCode = 400;
+    const NotFoundCode = 404;
+    const ConflictCode = 409;
+    const InternalServerError = 500;
+
     //The function adds a flight to the server.
     //@param {object} flight The flight to add.
     const addFlight = (flight) => {
@@ -45,10 +51,10 @@ export function useFlightDataLayer() {
                 if (response.ok) {
                     setAddFlightSuccess(true);
                 }
-                else if (response.status === 400) {
+                else if (response.status === BadRequestCode) {
                     response.json().then(validationProblemDetails => setAddFlightValidationProblemDetails(validationProblemDetails));
                 }
-                else if (response.status === 500) {
+                else if (response.status === InternalServerError) {
                     response.json().then(problemDetails => showError(problemDetails.detail));
                 }
                 else {
@@ -79,7 +85,7 @@ export function useFlightDataLayer() {
                 if (response.ok) {
                     setDeleteFlightSuccess(true);
                 }
-                else if (response.status === 500) {
+                else if (response.status === NotFoundCode || response.status === InternalServerError) {
                     response.json().then(problemDetails => showError(problemDetails.detail));
                 }
                 else {
@@ -125,10 +131,10 @@ export function useFlightDataLayer() {
                 if (response.ok) {
                     setUpdateFlightSuccess(true);
                 }
-                else if (response.status === 400) {
+                else if (response.status === BadRequestCode) {
                     response.json().then(validationProblemDetails => setUpdateFlightValidationProblemDetails(validationProblemDetails));
                 }
-                else if (response.status == 409 || response.status === 500) {
+                else if (response.status === NotFoundCode || response.status == ConflictCode || response.status === InternalServerError) {
                     response.json().then(problemDetails => showError(problemDetails.detail));
                 }
                 else {

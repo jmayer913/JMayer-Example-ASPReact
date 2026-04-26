@@ -72,7 +72,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         HttpClient httpClient = _factory.CreateClient();
         SortDestinations.SortDestinationDataLayer dataLayer = new(httpClient);
 
-        List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync();
+        List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync(TestContext.Current.CancellationToken);
         return sortDestinations?.FirstOrDefault(obj => obj.Name == name);
     }
 
@@ -112,7 +112,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             SortDestinationID = sortDestination.Integer64ID,
             SortDestinationName = sortDestination.Name ?? string.Empty,
         };
-        OperationResult operationResult = await dataLayer.CreateAsync(airline);
+        OperationResult operationResult = await dataLayer.CreateAsync(airline, TestContext.Current.CancellationToken);
 
         Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
         Assert.IsType<Airline>(operationResult.DataObject); //An airline must have been returned.
@@ -136,7 +136,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Bad IATA Code Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -170,7 +170,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Bad ICAO Code Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -204,7 +204,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = BadFormattedNumberCode,
             Name = "Add Bad Number Code Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -238,7 +238,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate ICAO Test 1",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
@@ -248,7 +248,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate ICAO Test New",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -282,7 +282,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate Name Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
@@ -292,7 +292,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Add Duplicate Name Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -326,7 +326,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "999",
             Name = "Add Duplicate Number Code Test 1",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
@@ -336,7 +336,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "999",
             Name = "Add Duplicate Number Code Test New",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -370,7 +370,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "999",
             Name = "Add Airline Sort Destination Not Found Test",
             SortDestinationID = BadSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -397,7 +397,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
 
-        long count = await dataLayer.CountAsync();
+        long count = await dataLayer.CountAsync(TestContext.Current.CancellationToken);
         Assert.True(count > 0);
     }
 
@@ -418,11 +418,11 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = "Delete Airline Test",
             NumberCode = Airline.ZeroNumberCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
-            operationResult = await dataLayer.DeleteAsync(airline);
+            operationResult = await dataLayer.DeleteAsync(airline, TestContext.Current.CancellationToken);
             Assert.True(operationResult.IsSuccessStatusCode);
         }
         else
@@ -441,7 +441,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
 
-        List<Airline>? airlines = await dataLayer.GetAllAsync();
+        List<Airline>? airlines = await dataLayer.GetAllAsync(TestContext.Current.CancellationToken);
 
         //Airlines must have been returned.
         Assert.NotNull(airlines);
@@ -458,7 +458,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
 
-        List<ListView>? airlines = await dataLayer.GetAllListViewAsync();
+        List<ListView>? airlines = await dataLayer.GetAllListViewAsync(TestContext.Current.CancellationToken);
 
         //List view airlines must have been returned.
         Assert.NotNull(airlines);
@@ -475,7 +475,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
         HttpClient httpClient = _factory.CreateClient();
         AirlineDataLayer dataLayer = new(httpClient);
 
-        Airline? airline = await dataLayer.GetSingleAsync();
+        Airline? airline = await dataLayer.GetSingleAsync(TestContext.Current.CancellationToken);
         Assert.NotNull(airline);
     }
 
@@ -497,11 +497,11 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             SortDestinationID = DefaultSortDestinationID,
         };
-        OperationResult operationResult = await dataLayer.CreateAsync(airline);
+        OperationResult operationResult = await dataLayer.CreateAsync(airline, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline createdAirline)
         {
-            Airline? verifyAirline = await dataLayer.GetSingleAsync(createdAirline.Integer64ID);
+            Airline? verifyAirline = await dataLayer.GetSingleAsync(createdAirline.Integer64ID, TestContext.Current.CancellationToken);
             Assert.NotNull(verifyAirline);
         }
         else
@@ -549,7 +549,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = originalName,
             NumberCode = originalNumberCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline createdAirline)
         {
@@ -563,7 +563,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
                 SortDestinationID = sortDestination.Integer64ID,
                 SortDestinationName = sortDestination.Name ?? string.Empty,
             };
-            operationResult = await dataLayer.UpdateAsync(updatedAirline);
+            operationResult = await dataLayer.UpdateAsync(updatedAirline, TestContext.Current.CancellationToken);
 
             Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
             Assert.IsType<Airline>(operationResult.DataObject); //An airline must have been returned.
@@ -592,12 +592,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Bad IATA Code Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.IATA = BadFormattedIATACode;
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -636,12 +636,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Bad ICAO Code Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.ICAO = BadFormattedICAOCode;
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -680,12 +680,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Bad Number Code Test",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.NumberCode = BadFormattedNumberCode;
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -724,7 +724,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = "Old Data Airline Test",
             NumberCode = Airline.ZeroNumberCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline firstAirline)
         {
@@ -732,7 +732,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
 
             firstAirline.Description = "A description";
 
-            operationResult = await dataLayer.UpdateAsync(secondAirline);
+            operationResult = await dataLayer.UpdateAsync(secondAirline, TestContext.Current.CancellationToken);
 
             if (!operationResult.IsSuccessStatusCode)
             {
@@ -740,7 +740,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
                 return;
             }
 
-            operationResult = await dataLayer.UpdateAsync(firstAirline);
+            operationResult = await dataLayer.UpdateAsync(firstAirline, TestContext.Current.CancellationToken);
 
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed."); //The operation must have failed.
             Assert.Null(operationResult.DataObject); //No airline was returned.
@@ -769,12 +769,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             Name = "Update Airline Sort Destination Not Found Test",
             NumberCode = Airline.ZeroNumberCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.SortDestinationID = BadSortDestinationID;
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -813,7 +813,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate ICAO Test 1",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
@@ -823,12 +823,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate ICAO Test 2",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.ICAO = "ZZN";
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -867,7 +867,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate Name Test 1",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
@@ -877,12 +877,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = Airline.ZeroNumberCode,
             Name = "Update Duplicate Name Test 2",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.Name = "Update Duplicate Name Test 1";
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -921,7 +921,7 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "997",
             Name = "Update Duplicate Number Code Test Test 1",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first airline.");
 
         operationResult = await dataLayer.CreateAsync(new Airline()
@@ -931,12 +931,12 @@ public class AirlineWebRequestUnitTest : IClassFixture<WebApplicationFactory<Pro
             NumberCode = "998",
             Name = "Update Duplicate Number Code Test 2",
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Airline airline)
         {
             airline.NumberCode = "997";
-            operationResult = await dataLayer.UpdateAsync(airline);
+            operationResult = await dataLayer.UpdateAsync(airline, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");

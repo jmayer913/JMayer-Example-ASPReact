@@ -40,7 +40,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        OperationResult operationResult = await dataLayer.CreateAsync(new Gate() {  Name = DefaultGateName });
+        OperationResult operationResult = await dataLayer.CreateAsync(new Gate() {  Name = DefaultGateName }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -63,7 +63,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        long count = await dataLayer.CountAsync();
+        long count = await dataLayer.CountAsync(TestContext.Current.CancellationToken);
         Assert.True(count > 0);
     }
 
@@ -76,7 +76,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        OperationResult operationResult = await dataLayer.DeleteAsync(new Gate() { Name = DefaultGateName });
+        OperationResult operationResult = await dataLayer.DeleteAsync(new Gate() { Name = DefaultGateName }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -99,7 +99,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        List<Gate>? gates = await dataLayer.GetAllAsync();
+        List<Gate>? gates = await dataLayer.GetAllAsync(TestContext.Current.CancellationToken);
 
         //Gates must have been returned.
         Assert.NotNull(gates);
@@ -116,7 +116,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        List<ListView>? gates = await dataLayer.GetAllListViewAsync();
+        List<ListView>? gates = await dataLayer.GetAllListViewAsync(TestContext.Current.CancellationToken);
 
         //List view gates must have been returned.
         Assert.NotNull(gates);
@@ -133,7 +133,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        Gate? gate = await dataLayer.GetSingleAsync();
+        Gate? gate = await dataLayer.GetSingleAsync(TestContext.Current.CancellationToken);
         Assert.NotNull(gate);
     }
 
@@ -147,7 +147,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        Gate? gate = await dataLayer.GetSingleAsync(1);
+        Gate? gate = await dataLayer.GetSingleAsync(1, TestContext.Current.CancellationToken);
         Assert.NotNull(gate);
     }
 
@@ -160,7 +160,7 @@ public class GateWebRequestUnitTest : IClassFixture<WebApplicationFactory<Progra
         HttpClient httpClient = _factory.CreateClient();
         GateDataLyaer dataLayer = new(httpClient);
 
-        OperationResult operationResult = await dataLayer.UpdateAsync(new Gate() { Name = DefaultGateName });
+        OperationResult operationResult = await dataLayer.UpdateAsync(new Gate() { Name = DefaultGateName }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");

@@ -40,7 +40,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        OperationResult operationResult = await dataLayer.CreateAsync(new SortDestination() { Name = DefaultSortDestinationName });
+        OperationResult operationResult = await dataLayer.CreateAsync(new SortDestination() { Name = DefaultSortDestinationName }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -63,7 +63,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        long count = await dataLayer.CountAsync();
+        long count = await dataLayer.CountAsync(TestContext.Current.CancellationToken);
         Assert.True(count > 0);
     }
 
@@ -76,7 +76,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        OperationResult operationResult = await dataLayer.DeleteAsync(new SortDestination() { Name = DefaultSortDestinationName });
+        OperationResult operationResult = await dataLayer.DeleteAsync(new SortDestination() { Name = DefaultSortDestinationName }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -99,7 +99,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync();
+        List<SortDestination>? sortDestinations = await dataLayer.GetAllAsync(TestContext.Current.CancellationToken);
 
         //Sort destinations must have been returned.
         Assert.NotNull(sortDestinations);
@@ -116,7 +116,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        List<ListView>? sortDestinations = await dataLayer.GetAllListViewAsync();
+        List<ListView>? sortDestinations = await dataLayer.GetAllListViewAsync(TestContext.Current.CancellationToken);
 
         //List view sort destinations must have been returned.
         Assert.NotNull(sortDestinations);
@@ -133,7 +133,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        SortDestination? sortDestination = await dataLayer.GetSingleAsync();
+        SortDestination? sortDestination = await dataLayer.GetSingleAsync(TestContext.Current.CancellationToken);
         Assert.NotNull(sortDestination);
     }
 
@@ -147,7 +147,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        SortDestination? sortDestination = await dataLayer.GetSingleAsync(1);
+        SortDestination? sortDestination = await dataLayer.GetSingleAsync(1, TestContext.Current.CancellationToken);
         Assert.NotNull(sortDestination);
     }
 
@@ -160,7 +160,7 @@ public class SortDestinationWebRequestUnitTest : IClassFixture<WebApplicationFac
         HttpClient httpClient = _factory.CreateClient();
         SortDestinationDataLayer dataLayer = new(httpClient);
 
-        OperationResult operationResult = await dataLayer.UpdateAsync(new SortDestination() { Name = DefaultSortDestinationName });
+        OperationResult operationResult = await dataLayer.UpdateAsync(new SortDestination() { Name = DefaultSortDestinationName }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");

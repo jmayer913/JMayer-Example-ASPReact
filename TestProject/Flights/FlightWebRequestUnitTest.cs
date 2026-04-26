@@ -170,7 +170,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             IATA = iata,
             Name = iata,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         return operationResult.DataObject as Airline;
     }
@@ -271,7 +271,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Duplicate Flight Test 1",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first flight.");
 
         operationResult = await dataLayer.CreateAsync(new Flight()
@@ -283,7 +283,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Duplicate Flight Test New",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -353,7 +353,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Destination = destination,
             SortDestinationID = sortDestination.Integer64ID,
         };
-        OperationResult operationResult = await dataLayer.CreateAsync(flight);
+        OperationResult operationResult = await dataLayer.CreateAsync(flight, TestContext.Current.CancellationToken);
 
         Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
         Assert.IsType<Flight>(operationResult.DataObject); //A flight must have been returned.
@@ -379,7 +379,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Flight Airline Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -415,7 +415,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Bad Destination Test",
             Destination = BadFormatttedDestination,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -451,7 +451,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Bad Flight Number Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -488,7 +488,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Flight CodeShare Airline Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -524,7 +524,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Flight Gate Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -560,7 +560,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Add Flight Sort Destination Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = BadSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         //The operation must have failed.
         Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -587,7 +587,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
 
-        long count = await dataLayer.CountAsync();
+        long count = await dataLayer.CountAsync(TestContext.Current.CancellationToken);
         Assert.True(count > 0);
     }
 
@@ -617,13 +617,13 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Delete Airline Cascade Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the flight.");
 
-        operationResult = await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline);
+        operationResult = await new Airlines.AirlineDataLayer(httpClient).DeleteAsync(airline, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to delete the airline.");
 
-        List<Flight>? flights = await dataLayer.GetAllAsync();
+        List<Flight>? flights = await dataLayer.GetAllAsync(TestContext.Current.CancellationToken);
 
         if (flights is null)
         {
@@ -653,11 +653,11 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Delete Flight Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
-            operationResult = await dataLayer.DeleteAsync(flight);
+            operationResult = await dataLayer.DeleteAsync(flight, TestContext.Current.CancellationToken);
             Assert.True(operationResult.IsSuccessStatusCode);
         }
         else
@@ -675,7 +675,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
-        List<Flight>? flights = await dataLayer.GetAllAsync();
+        List<Flight>? flights = await dataLayer.GetAllAsync(TestContext.Current.CancellationToken);
 
         //Flights must have been returned.
         Assert.NotNull(flights);
@@ -691,7 +691,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
     {
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
-        List<ListView>? flights = await dataLayer.GetAllListViewAsync();
+        List<ListView>? flights = await dataLayer.GetAllListViewAsync(TestContext.Current.CancellationToken);
 
         //List view flights must have been returned.
         Assert.NotNull(flights);
@@ -708,7 +708,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
 
-        Flight? flight = await dataLayer.GetSingleAsync();
+        Flight? flight = await dataLayer.GetSingleAsync(TestContext.Current.CancellationToken);
         Assert.NotNull(flight);
     }
 
@@ -722,7 +722,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
         HttpClient httpClient = _factory.CreateClient();
         FlightDataLayer dataLayer = new(httpClient);
 
-        Flight? flight = await dataLayer.GetSingleAsync(1);
+        Flight? flight = await dataLayer.GetSingleAsync(1, TestContext.Current.CancellationToken);
         Assert.NotNull(flight);
     }
 
@@ -745,7 +745,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Duplicate Flight Test 1",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
         Assert.True(operationResult.IsSuccessStatusCode, "Failed to create the first flight.");
 
         operationResult = await dataLayer.CreateAsync(new Flight()
@@ -757,7 +757,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Duplicate Flight Test New",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight secondFlight)
         {
@@ -771,7 +771,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Name = "Update Duplicate Flight Test New",
                 Destination = DefaultAirportCode,
                 SortDestinationID = DefaultSortDestinationID,
-            });
+            }, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -842,7 +842,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = $"{airline.IATA}{flightNumber}",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
         {
@@ -860,7 +860,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Destination = destination,
                 SortDestinationID = sortDestination.Integer64ID,
             };
-            operationResult = await dataLayer.UpdateAsync(flight);
+            operationResult = await dataLayer.UpdateAsync(flight, TestContext.Current.CancellationToken);
 
             Assert.True(operationResult.IsSuccessStatusCode, "The operation should have been successful."); //The operation must have been successful.
             Assert.IsType<Flight>(operationResult.DataObject); //A flight must have been returned.
@@ -891,7 +891,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Flight Airline Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
         {
@@ -905,7 +905,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Name = "Update Flight Airline Not Found Test",
                 Destination = DefaultAirportCode,
                 SortDestinationID = DefaultSortDestinationID,
-            });
+            }, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -946,12 +946,12 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Bad Destination Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             flight.Destination = BadFormatttedDestination;
-            operationResult = await dataLayer.UpdateAsync(flight);
+            operationResult = await dataLayer.UpdateAsync(flight, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -992,12 +992,12 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Bad Flight Number Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight flight)
         {
             flight.FlightNumber = BadFormatttedFlightNumber;
-            operationResult = await dataLayer.UpdateAsync(flight);
+            operationResult = await dataLayer.UpdateAsync(flight, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -1038,7 +1038,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Flight CodeShare Airline Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
         {
@@ -1053,7 +1053,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Name = "Update Flight CodeShare Airline Not Found Test",
                 Destination = DefaultAirportCode,
                 SortDestinationID = DefaultSortDestinationID,
-            });
+            }, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -1094,7 +1094,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Flight Gate Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
         {
@@ -1108,7 +1108,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Name = "Update Flight Gate Not Found Test",
                 Destination = DefaultAirportCode,
                 SortDestinationID = DefaultSortDestinationID,
-            });
+            }, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
@@ -1149,7 +1149,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
             Name = "Update Flight Sort Destination Not Found Test",
             Destination = DefaultAirportCode,
             SortDestinationID = DefaultSortDestinationID,
-        });
+        }, TestContext.Current.CancellationToken);
 
         if (operationResult.IsSuccessStatusCode && operationResult.DataObject is Flight createdFlight)
         {
@@ -1163,7 +1163,7 @@ public class FlightWebRequestUnitTest : IClassFixture<WebApplicationFactory<Prog
                 Name = "Update Flight Sort Destination Not Found Test",
                 Destination = DefaultAirportCode,
                 SortDestinationID = BadSortDestinationID,
-            });
+            }, TestContext.Current.CancellationToken);
 
             //The operation must have failed.
             Assert.False(operationResult.IsSuccessStatusCode, "The operation should have failed.");
